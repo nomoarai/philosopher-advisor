@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>철학자에게 묻다 — 직장 고민 솔루션</title>
+  <meta name="description" content="직장 고민을 5명의 철학자 관점으로 풀어드립니다. 에피쿠로스, 플라톤, 아리스토텔레스, 헤라클리투스, 소크라테스의 지혜를 만나보세요." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── STEP 1: 질문 입력 ── -->
+  <section id="step-question" class="step active">
+    <div class="container">
+      <header class="site-header">
+        <p class="site-label">철학자에게 묻다</p>
+        <h1 class="site-title">지금 어떤 고민이 있으신가요?</h1>
+        <p class="site-desc">직장에서의 고민을 적어주세요.<br/>5명의 철학자 중 한 명이 당신만의 답을 드립니다.</p>
+      </header>
+
+      <div class="question-form">
+        <textarea
+          id="question-input"
+          placeholder="예) 상사와 자꾸 마찰이 생겨서 출근하기가 싫습니다. 어떻게 해야 할까요?"
+          maxlength="500"
+          rows="6"
+        ></textarea>
+        <div class="char-count"><span id="char-current">0</span> / 500</div>
+        <button id="btn-next-step" class="btn-primary" disabled>철학자 선택하기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STEP 2: 철학자 선택 ── -->
+  <section id="step-philosopher" class="step">
+    <div class="container">
+      <header class="step-header">
+        <button id="btn-back-question" class="btn-back">← 다시 쓰기</button>
+        <h2 class="step-title">누구에게 물어볼까요?</h2>
+        <p class="step-desc">한 명을 선택하면 그의 시각으로 답을 드립니다.</p>
+      </header>
+
+      <div class="philosopher-grid">
+        <button class="philosopher-card" data-philosopher="epicurus" id="card-epicurus">
+          <div class="card-name-en">Epicurus</div>
+          <div class="card-name-ko">에피쿠로스</div>
+          <div class="card-keyword">쾌락 · 평온 · 소박한 행복</div>
+          <div class="card-desc">불필요한 욕망과 두려움을 걷어내고 진정한 행복을 찾도록 이끕니다.</div>
+        </button>
+
+        <button class="philosopher-card" data-philosopher="plato" id="card-plato">
+          <div class="card-name-en">Plato</div>
+          <div class="card-name-ko">플라톤</div>
+          <div class="card-keyword">이상 · 진리 · 완전한 형상</div>
+          <div class="card-desc">현실 너머 이상적인 상태를 바라보며 본질적인 문제를 직시합니다.</div>
+        </button>
+
+        <button class="philosopher-card" data-philosopher="aristoteles" id="card-aristoteles">
+          <div class="card-name-en">Aristoteles</div>
+          <div class="card-name-ko">아리스토텔레스</div>
+          <div class="card-keyword">실용 · 중용 · 논리</div>
+          <div class="card-desc">감정과 이성의 균형을 찾아 현실적이고 구체적인 방향을 제시합니다.</div>
+        </button>
+
+        <button class="philosopher-card" data-philosopher="heraclitus" id="card-heraclitus">
+          <div class="card-name-en">Heraclitus</div>
+          <div class="card-name-ko">헤라클리투스</div>
+          <div class="card-keyword">변화 · 흐름 · 역설</div>
+          <div class="card-desc">모든 것은 흐른다는 시각으로 고민을 변화의 일부로 바라보게 합니다.</div>
+        </button>
+
+        <button class="philosopher-card" data-philosopher="socrates" id="card-socrates">
+          <div class="card-name-en">Socrates</div>
+          <div class="card-name-ko">소크라테스</div>
+          <div class="card-keyword">질문 · 자기인식 · 성찰</div>
+          <div class="card-desc">날카로운 질문으로 당신이 이미 알고 있는 답을 스스로 찾게 합니다.</div>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STEP 3: 답변 화면 ── -->
+  <section id="step-answer" class="step">
+    <div class="container">
+      <button id="btn-back-philosopher" class="btn-back">← 다른 철학자 선택</button>
+
+      <div class="answer-header">
+        <div id="answer-philosopher-name" class="answer-philosopher-name"></div>
+        <div id="answer-philosopher-ko" class="answer-philosopher-ko"></div>
+      </div>
+
+      <div class="question-recap">
+        <div class="recap-label">당신의 고민</div>
+        <div id="recap-question" class="recap-text"></div>
+      </div>
+
+      <div id="answer-loading" class="answer-loading">
+        <div class="loading-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <p>생각하는 중...</p>
+      </div>
+
+      <div id="answer-content" class="answer-content hidden">
+        <div class="answer-label">철학자의 답변</div>
+        <div id="answer-text" class="answer-text"></div>
+      </div>
+
+      <div id="answer-error" class="answer-error hidden">
+        <p id="error-message"></p>
+      </div>
+
+      <div class="answer-actions hidden" id="answer-actions">
+        <button id="btn-restart" class="btn-secondary">새 고민 시작하기</button>
+        <button id="btn-try-other" class="btn-primary">다른 철학자에게 묻기</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

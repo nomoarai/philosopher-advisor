@@ -1,0 +1,427 @@
+/* ─────────────────────────────────────────
+   기본 리셋 & 토큰
+───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #fafaf8;
+  --color-surface: #ffffff;
+  --color-border: #e8e4dc;
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #6b6760;
+  --color-text-muted: #a8a39a;
+  --color-accent: #3d3428;
+  --color-accent-hover: #574c3a;
+  --color-card-hover: #f5f1ea;
+  --color-selected: #3d3428;
+  --font-serif: 'Noto Serif KR', serif;
+  --font-sans: 'Noto Sans KR', sans-serif;
+  --radius: 8px;
+  --transition: 0.2s ease;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ─────────────────────────────────────────
+   레이아웃
+───────────────────────────────────────── */
+.container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+}
+
+/* ─────────────────────────────────────────
+   스텝 전환
+───────────────────────────────────────── */
+.step {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.step.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─────────────────────────────────────────
+   STEP 1 — 헤더
+───────────────────────────────────────── */
+.site-header {
+  margin-bottom: 48px;
+}
+
+.site-label {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 16px;
+}
+
+.site-title {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.site-desc {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+}
+
+/* ─────────────────────────────────────────
+   STEP 1 — 질문 폼
+───────────────────────────────────────── */
+.question-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+textarea {
+  width: 100%;
+  padding: 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--color-text-primary);
+  line-height: 1.7;
+  resize: vertical;
+  transition: border-color var(--transition);
+  outline: none;
+}
+
+textarea:focus {
+  border-color: var(--color-accent);
+}
+
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.char-count {
+  text-align: right;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* ─────────────────────────────────────────
+   버튼
+───────────────────────────────────────── */
+.btn-primary {
+  padding: 14px 28px;
+  background-color: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition), opacity var(--transition);
+  align-self: flex-start;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  padding: 14px 28px;
+  background-color: transparent;
+  color: var(--color-accent);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--transition), background-color var(--transition);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-card-hover);
+  border-color: var(--color-accent);
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 32px;
+  transition: color var(--transition);
+  display: block;
+}
+
+.btn-back:hover {
+  color: var(--color-text-primary);
+}
+
+/* ─────────────────────────────────────────
+   STEP 2 — 철학자 선택
+───────────────────────────────────────── */
+.step-header {
+  margin-bottom: 36px;
+}
+
+.step-title {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.step-desc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.philosopher-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.philosopher-card {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 20px;
+  align-items: start;
+  padding: 20px 24px;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition), background-color var(--transition);
+  width: 100%;
+}
+
+.philosopher-card:hover {
+  border-color: var(--color-accent);
+  background-color: var(--color-card-hover);
+}
+
+.philosopher-card.selected {
+  border-color: var(--color-selected);
+  background-color: var(--color-card-hover);
+}
+
+.card-name-en {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  grid-column: 1;
+  grid-row: 1;
+  line-height: 1.3;
+}
+
+.card-name-ko {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  grid-column: 1;
+  grid-row: 2;
+  margin-top: 2px;
+}
+
+.card-keyword {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  grid-column: 2;
+  grid-row: 1;
+  padding-top: 3px;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  grid-column: 2;
+  grid-row: 2;
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+/* ─────────────────────────────────────────
+   STEP 3 — 답변
+───────────────────────────────────────── */
+.answer-header {
+  margin-bottom: 32px;
+}
+
+.answer-philosopher-name {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.answer-philosopher-ko {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.question-recap {
+  padding: 16px 20px;
+  background: var(--color-card-hover);
+  border-left: 3px solid var(--color-border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin-bottom: 40px;
+}
+
+.recap-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+
+.recap-text {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+/* 로딩 */
+.answer-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-text-muted);
+  animation: bounce 1.2s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+  40%            { transform: scale(1);   opacity: 1; }
+}
+
+/* 답변 내용 */
+.answer-content {
+  margin-bottom: 40px;
+}
+
+.answer-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 16px;
+}
+
+.answer-text {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+}
+
+/* 에러 */
+.answer-error {
+  padding: 16px 20px;
+  background: #fff5f5;
+  border: 1.5px solid #fecaca;
+  border-radius: var(--radius);
+  color: #b91c1c;
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+/* 하단 버튼 그룹 */
+.answer-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ─────────────────────────────────────────
+   유틸
+───────────────────────────────────────── */
+.hidden {
+  display: none !important;
+}
+
+/* ─────────────────────────────────────────
+   반응형
+───────────────────────────────────────── */
+@media (max-width: 480px) {
+  .container {
+    padding: 40px 16px 60px;
+  }
+  .site-title {
+    font-size: 22px;
+  }
+  .philosopher-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+  .card-name-en { grid-column: 1; grid-row: 1; }
+  .card-name-ko { grid-column: 1; grid-row: 2; }
+  .card-keyword { grid-column: 1; grid-row: 3; margin-top: 8px; }
+  .card-desc    { grid-column: 1; grid-row: 4; }
+  .answer-actions {
+    flex-direction: column;
+  }
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+}
