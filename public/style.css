@@ -134,8 +134,18 @@ body:has(#step-intro.active) {
 .question-step-header {
   text-align: center;
   padding: 32px 0 24px;
-  border-bottom: 2px solid #111111;
   margin-bottom: 8px;
+  position: relative;
+}
+
+.question-step-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-bottom: 2px solid #111111;
+  filter: url(#sketchy);
 }
 
 .question-step-label {
@@ -173,10 +183,30 @@ body:has(#step-intro.active) {
   margin-top: 10px;
 }
 
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid #111111;
+  border-radius: var(--radius);
+  filter: url(#sketchy);
+  pointer-events: none;
+  z-index: 1;
+  transition: border-color var(--transition);
+}
+
+.textarea-wrapper:focus-within::before {
+  border-color: var(--color-accent);
+}
+
 textarea {
   width: 100%;
   padding: 18px;
-  border: 2px solid #111111;
+  border: none;
   border-radius: var(--radius);
   background: var(--color-surface);
   font-family: var(--font-sans);
@@ -184,12 +214,7 @@ textarea {
   color: var(--color-text-primary);
   line-height: 1.7;
   resize: none;
-  transition: border-color var(--transition);
   outline: none;
-}
-
-textarea:focus {
-  border-color: var(--color-accent);
 }
 
 textarea::placeholder {
@@ -231,21 +256,35 @@ textarea::placeholder {
 .checkmark {
   width: 18px;
   height: 18px;
-  border: 2px solid #333333;
+  border: none;
   border-radius: 2px;
   background-color: var(--color-surface);
   position: relative;
   flex-shrink: 0;
   margin-top: 2px;
-  transition: background-color var(--transition), border-color var(--transition);
+  transition: background-color var(--transition);
 }
 
-.checkbox-container:hover input~.checkmark {
+.checkmark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid #333333;
+  border-radius: 2px;
+  filter: url(#sketchy);
+  pointer-events: none;
+  transition: border-color var(--transition);
+}
+
+.checkbox-container:hover input~.checkmark::before {
   border-color: var(--color-accent);
 }
 
 .checkbox-container input:checked~.checkmark {
   background-color: var(--color-accent);
+}
+
+.checkbox-container input:checked~.checkmark::before {
   border-color: var(--color-accent);
 }
 
@@ -324,9 +363,19 @@ textarea::placeholder {
   }
 }
 
-/* 버튼 테두리에 스케치 필터 */
+/* 버튼 테두리에 스케치 필터 — 가상 요소로 테두리만 분리 적용 */
 .btn-secondary {
+  position: relative;
+}
+
+.btn-secondary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid #111111;
+  border-radius: inherit;
   filter: url(#sketchy);
+  pointer-events: none;
 }
 
 
@@ -334,8 +383,9 @@ textarea::placeholder {
    버튼 컴포넌트
    ───────────────────────────────────────── */
 .btn-primary {
+  position: relative;
   padding: 15px 28px;
-  background-color: var(--color-accent);
+  background-color: transparent;
   color: #ffffff;
   border: none;
   border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
@@ -343,14 +393,29 @@ textarea::placeholder {
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform var(--transition), background-color var(--transition), opacity var(--transition);
+  transition: transform var(--transition), opacity var(--transition);
   align-self: flex-start;
   animation: sketch-morph 6s ease-in-out infinite;
+  isolation: isolate;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-accent);
+  border-radius: inherit;
+  filter: url(#sketchy);
+  z-index: -1;
+  transition: background-color var(--transition);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--color-accent-hover);
   transform: translateY(-1px);
+}
+
+.btn-primary:hover:not(:disabled)::before {
+  background-color: var(--color-accent-hover);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -367,7 +432,7 @@ textarea::placeholder {
   padding: 15px 28px;
   background-color: var(--color-bg);
   color: var(--color-text-primary);
-  border: 2px solid #111111;
+  border: none;
   border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
   font-family: var(--font-sans);
   font-size: 15px;
@@ -380,8 +445,11 @@ textarea::placeholder {
 
 .btn-secondary:hover {
   background-color: var(--color-card-hover);
-  border-color: var(--color-text-muted);
   color: var(--color-text-primary);
+}
+
+.btn-secondary:hover::before {
+  border-color: var(--color-text-muted);
 }
 
 .btn-back {
@@ -530,60 +598,92 @@ textarea::placeholder {
    ───────────────────────────────────────── */
 .answer-header-wrapper {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
+  text-align: center;
 }
 
 .answer-philosopher-avatar {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid #111111;
-  background: #f0f0f0;
+  width: 100%;
 }
 
 .answer-philosopher-avatar img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
 }
 
 .answer-header {
-  text-align: left;
+  text-align: center;
 }
 
 .answer-philosopher-name {
   font-family: var(--font-serif);
-  font-size: 28px;
+  font-size: 48px;
   font-weight: 400;
   color: var(--color-text-primary);
-  line-height: 1.2;
-  letter-spacing: -0.5px;
+  line-height: 1.1;
+  letter-spacing: -1px;
 }
 
 .answer-philosopher-ko {
   font-size: 13px;
   color: var(--color-text-muted);
-  margin-top: 4px;
+  margin-top: 6px;
+}
+
+.answer-philosopher-doctrine {
+  margin-top: 12px;
+}
+
+.doctrine-greek {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-style: italic;
+  color: var(--color-text-muted);
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+}
+
+.doctrine-en {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+  margin-top: 5px;
 }
 
 .question-recap {
   padding: 18px 20px;
   background: var(--color-surface);
-  border-left: 3px solid #111111;
-  border-radius: 0;
-  margin-bottom: 36px;
+  border: none;
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.question-recap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid #111111;
+  border-left: 4px solid #111111;
+  border-radius: var(--radius);
+  filter: url(#sketchy);
+  pointer-events: none;
 }
 
 .recap-label {
   font-size: 11px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--color-accent);
-  margin-bottom: 6px;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
   font-weight: 700;
+  text-align: center;
 }
 
 .recap-text {
@@ -644,46 +744,69 @@ textarea::placeholder {
   }
 }
 
-/* 답변 본문 */
+/* 답변 본문 — 카드 없음, 텍스트만 */
 .answer-content {
   margin-bottom: 40px;
-  background: var(--color-surface-card);
-  border: 2px solid #111111;
-  border-radius: var(--radius-lg);
-  padding: 28px;
 }
 
 .answer-label {
   font-size: 11px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin-bottom: 18px;
-  border-bottom: 2px solid #111111;
+  margin-bottom: 20px;
   padding-bottom: 8px;
-  text-align: left;
+  text-align: center;
   font-weight: 700;
+  position: relative;
+}
+
+.answer-label::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-bottom: 2px solid #111111;
+  filter: url(#sketchy);
 }
 
 .answer-text {
   font-family: var(--font-serif);
   font-size: 16px;
-  line-height: 1.95;
+  line-height: 2;
   color: var(--color-text-primary);
   white-space: pre-wrap;
   text-align: left;
+}
+
+.answer-text strong {
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
 }
 
 /* 에러 */
 .answer-error {
   padding: 16px 20px;
   background: rgba(150, 48, 42, 0.05);
-  border: 2px solid #333333;
+  border: none;
   border-radius: var(--radius);
   color: var(--color-heart);
   font-size: 14px;
   margin-bottom: 32px;
   text-align: left;
+  position: relative;
+}
+
+.answer-error::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid #333333;
+  border-radius: var(--radius);
+  filter: url(#sketchy);
+  pointer-events: none;
 }
 
 /* 하단 액션 버튼 */
@@ -692,6 +815,54 @@ textarea::placeholder {
   gap: 12px;
   justify-content: flex-start;
   flex-wrap: wrap;
+}
+
+/* ── 답변 페이지 등장 애니메이션 ── */
+@keyframes answerSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes answerFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* 아바타+이름 슬라이드업 */
+.answer-header-wrapper.anim-in {
+  animation: answerSlideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 텍스트 블록 슬라이드업 */
+.answer-content.anim-slide {
+  animation: answerSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 단어 단위 페이드인 */
+.answer-word {
+  display: inline;
+  opacity: 0;
+}
+
+.answer-word.anim-in {
+  animation: answerFadeIn 0.4s ease forwards;
+}
+
+/* 액션 버튼 페이드인 */
+.answer-actions.anim-in {
+  animation: answerFadeIn 0.4s ease forwards;
 }
 
 /* ─────────────────────────────────────────
@@ -781,10 +952,20 @@ textarea::placeholder {
 /* 커뮤니티 툴바 및 필터 */
 .community-toolbar {
   margin-bottom: 20px;
-  border-bottom: 2px solid #111111;
   padding-bottom: 8px;
   display: flex;
   justify-content: flex-start;
+  position: relative;
+}
+
+.community-toolbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-bottom: 2px solid #111111;
+  filter: url(#sketchy);
 }
 
 .filter-buttons {
@@ -825,21 +1006,42 @@ textarea::placeholder {
 
 .post-card {
   background: var(--color-surface-card);
-  border: 2px solid #111111;
+  border: none;
   border-radius: var(--radius-lg);
   padding: 0;
   display: flex;
   flex-direction: column;
   transition: all var(--transition);
-  overflow: hidden;
+  position: relative;
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid #111111;
+  border-radius: var(--radius-lg);
+  filter: url(#sketchy);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .post-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 2px solid #111111;
   padding: 18px 20px;
+  position: relative;
+}
+
+.post-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-bottom: 2px solid #111111;
+  filter: url(#sketchy);
 }
 
 .post-philosopher-avatar {
@@ -939,16 +1141,38 @@ textarea::placeholder {
   max-height: 1000px;
   opacity: 1;
   padding: 20px;
-  border-top: 2px dashed #333333;
+  border-top: none;
   background: var(--color-surface);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  position: relative;
+}
+
+.post-card.open .post-answer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-top: 2px dashed #333333;
+  filter: url(#sketchy);
 }
 
 .post-footer {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  border-top: 2px solid #111111;
   padding: 12px 20px;
+  position: relative;
+}
+
+.post-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-top: 2px solid #111111;
+  filter: url(#sketchy);
 }
 
 /* 공감 하트 버튼 및 마이크로 인터랙션 */
@@ -1013,11 +1237,21 @@ textarea::placeholder {
   right: 0;
   height: 68px;
   background: var(--color-surface-dark);
-  border-top: 2px solid #444444;
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 1000;
+}
+
+.bottom-tab-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-top: 2px solid #444444;
+  filter: url(#sketchy);
+  pointer-events: none;
 }
 
 .tab-item {
@@ -1052,9 +1286,9 @@ textarea::placeholder {
 }
 
 .tab-label {
-  font-size: 12px;
+  font-size: 16px;
   font-family: var(--font-serif);
-  font-weight: 400;
+  font-weight: 800;
   letter-spacing: 0.02em;
 }
 
@@ -1069,7 +1303,6 @@ textarea::placeholder {
   height: 56px;
   background: rgba(255, 255, 255, 0.97);
   border: none;
-  border-bottom: 2px solid #111111;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1085,6 +1318,17 @@ textarea::placeholder {
   height: 22px;
   width: auto;
   object-fit: contain;
+}
+
+.btn-global-home::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-bottom: 2px solid #111111;
+  filter: url(#sketchy);
+  pointer-events: none;
 }
 
 .btn-global-home:hover {
@@ -1164,20 +1408,23 @@ textarea::placeholder {
   }
 
   .answer-header-wrapper {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
 
   .answer-philosopher-avatar {
-    width: 56px;
-    height: 56px;
+    width: 100%;
   }
 
   .answer-philosopher-name {
-    font-size: 22px;
+    font-size: 38px;
+  }
+
+  .doctrine-greek {
+    font-size: 17px;
   }
 
   .answer-content {
-    padding: 20px;
+    padding: 0;
   }
 
   .answer-text {
@@ -1243,10 +1490,12 @@ textarea::placeholder {
 
 .side-pillar img {
   width: 100%;
-  height: 100%;
+  height: 120%;
+  /* 20% 여유 공간 확보 — 패럴랙스 이동 범위 */
   object-fit: cover;
   object-position: top center;
   display: block;
+  will-change: transform;
 }
 
 /* 좌측은 좌우 반전 */
@@ -1267,6 +1516,21 @@ body:has(#step-question.active) #step-question .container {
   margin-right: auto;
 }
 
+/* step-answer 활성화 시 기둥 표시 */
+body:has(#step-answer.active) .side-pillar {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* step-answer: 기둥 끝이 마진 */
+body:has(#step-answer.active) #step-answer .container {
+  max-width: 52vw;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* 아고라 탭에서는 기둥 숨김 */
 body:has(#tab-community.active) .side-pillar {
   opacity: 0;
@@ -1281,6 +1545,12 @@ body:has(#tab-community.active) .side-pillar {
 
   body:has(#step-question.active) #step-question .container {
     max-width: 64vw;
+  }
+
+  body:has(#step-answer.active) #step-answer .container {
+    max-width: 64vw;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
@@ -1320,7 +1590,7 @@ body:has(#step-intro.active) .btn-global-home {
   left: 0;
   right: 0;
   height: 140px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.55) 55%, transparent 100%);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.8) 55%, transparent 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1549,4 +1819,111 @@ body:has(#step-intro.active) .btn-global-home {
 
 #tab-community .post-card.open .post-answer {
   background: rgba(255, 255, 255, 0.97);
+}
+
+/* ─────────────────────────────────────────
+   전환 영상 오버레이
+───────────────────────────────────────── */
+.video-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.video-transition.fade-in {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.video-transition.hidden {
+  display: none;
+}
+
+.video-transition video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.video-transition video.visible {
+  opacity: 1;
+}
+
+/* 생성 중 로딩 메시지 */
+.transition-loading {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  /* 영상 위 흰색 blur 후광 */
+  background: radial-gradient(ellipse at center,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 0.8) 32%,
+      rgba(255, 255, 255, 0) 72%);
+  padding: 56px 80px;
+}
+
+.transition-loading.visible {
+  opacity: 1;
+}
+
+.transition-loading-sentence {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+.transition-loading-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.transition-loading-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  animation: tl-pulse 1.4s ease-in-out infinite;
+}
+
+.transition-loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.transition-loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes tl-pulse {
+
+  0%,
+  80%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.75);
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

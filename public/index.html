@@ -68,8 +68,10 @@
             <p class="question-step-desc">직장에서의 말 못 할 고민을 적어주세요.<br />고대 그리스 철학자들이 깊은 지혜로 응답합니다.</p>
           </header>
           <div class="question-form">
-            <textarea id="question-input" placeholder="예) 상사와 자꾸 마찰이 생겨서 출근하기가 싫습니다. 어떻게 해야 할까요?" maxlength="500"
-              rows="6"></textarea>
+            <div class="textarea-wrapper">
+              <textarea id="question-input" placeholder="예) 상사와 자꾸 마찰이 생겨서 출근하기가 싫습니다. 어떻게 해야 할까요?" maxlength="500"
+                rows="6"></textarea>
+            </div>
 
             <!-- 질문 하단 영역: 체크박스 & 글자수 -->
             <div class="form-footer">
@@ -140,11 +142,15 @@
 
           <div class="answer-header-wrapper">
             <div class="answer-philosopher-avatar">
-              <img id="answer-avatar-img" src="/images/epicurus@2x.png" alt="철학자 아바타" />
+              <img id="answer-avatar-img" src="/images/epicurus.png" alt="철학자 아바타" />
             </div>
             <div class="answer-header">
               <div id="answer-philosopher-name" class="answer-philosopher-name"></div>
               <div id="answer-philosopher-ko" class="answer-philosopher-ko"></div>
+              <div id="answer-philosopher-doctrine" class="answer-philosopher-doctrine">
+                <div id="doctrine-greek" class="doctrine-greek"></div>
+                <div id="doctrine-en" class="doctrine-en"></div>
+              </div>
             </div>
           </div>
 
@@ -242,6 +248,18 @@
   </div>
   <div class="side-pillar side-pillar--right" aria-hidden="true">
     <img src="/images/side bg.png" alt="" />
+  </div>
+
+  <!-- 전환 영상 오버레이 -->
+  <div id="video-transition" class="video-transition hidden">
+    <video id="transition-video-in" playsinline muted></video>
+    <video id="transition-video-out" playsinline muted></video>
+    <div id="transition-loading" class="transition-loading">
+      <div class="transition-loading-sentence" id="transition-loading-sentence"></div>
+      <div class="transition-loading-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

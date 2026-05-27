@@ -11,11 +11,11 @@ const state = {
 };
 
 const philosopherMeta = {
-  epicurus:     { en: 'Epicurus',     ko: '에피쿠로스',     avatar: '/images/epicurus@2x.png' },
-  plato:        { en: 'Plato',        ko: '플라톤',         avatar: '/images/plato@2x.png' },
-  aristoteles:  { en: 'Aristoteles',  ko: '아리스토텔레스', avatar: '/images/aristoteles@2x.png' },
-  heraclitus:   { en: 'Heraclitus',   ko: '헤라클리투스',  avatar: '/images/heraclitus@2x.png' },
-  socrates:     { en: 'Socrates',     ko: '소크라테스',     avatar: '/images/socrates@2x.png' }
+  epicurus:     { en: 'Epicurus',     ko: '에피쿠로스',     avatar: '/images/epicurus.png',     docGreek: 'ἀταραξία',       docEn: 'tranquility'      },
+  plato:        { en: 'Plato',        ko: '플라톤',         avatar: '/images/plato.png',         docGreek: 'δικαιοσύνη',     docEn: 'justice'          },
+  aristoteles:  { en: 'Aristoteles',  ko: '아리스토텔레스', avatar: '/images/aristoteles.png',   docGreek: 'εὐδαιμονία',     docEn: 'human flourishing'},
+  heraclitus:   { en: 'Heraclitus',   ko: '헤라클리투스',  avatar: '/images/heraclitus.png',    docGreek: 'πάντα ῥεῖ',     docEn: 'everything flows' },
+  socrates:     { en: 'Socrates',     ko: '소크라테스',     avatar: '/images/socrates.png',      docGreek: 'γνῶθι σεαυτόν', docEn: 'know yourself'    }
 };
 
 const LOCAL_STORAGE_KEYS = {
@@ -54,6 +54,8 @@ const btnBackPhilosopher = document.getElementById('btn-back-philosopher');
 const answerAvatarImg       = document.getElementById('answer-avatar-img');
 const answerPhilosopherName = document.getElementById('answer-philosopher-name');
 const answerPhilosopherKo   = document.getElementById('answer-philosopher-ko');
+const doctrineGreek         = document.getElementById('doctrine-greek');
+const doctrineEn            = document.getElementById('doctrine-en');
 const recapQuestion         = document.getElementById('recap-question');
 const answerLoading         = document.getElementById('answer-loading');
 const answerContent         = document.getElementById('answer-content');
@@ -80,6 +82,20 @@ const btnAdminAuth       = document.getElementById('btn-admin-auth');
 const pencilStack   = document.getElementById('pencil-stack');
 const pencilHintBar = document.getElementById('pencil-hint-bar');
 const pencilItems   = document.querySelectorAll('.pencil-item');
+
+// 전환 영상
+const videoTransition           = document.getElementById('video-transition');
+const transitionVideoIn         = document.getElementById('transition-video-in');
+const transitionVideoOut        = document.getElementById('transition-video-out');
+const transitionLoading         = document.getElementById('transition-loading');
+const transitionLoadingSentence = document.getElementById('transition-loading-sentence');
+
+/* 한국어 주격조사: 받침 없으면 '가', 있으면 '이' */
+function subjectParticle(name) {
+  const code = name.charCodeAt(name.length - 1);
+  if (code < 0xAC00 || code > 0xD7A3) return '이';
+  return (code - 0xAC00) % 28 === 0 ? '가' : '이';
+}
 
 // ─────────────────────────────────────────
 // 초기화
@@ -180,6 +196,11 @@ function showStep(name) {
     initPencilInteraction();
   } else {
     clearPencilHint();
+  }
+
+  // answer 스텝이 아닐 때 기둥 패럴랙스 초기화
+  if (name !== 'answer') {
+    resetPillarParallax();
   }
 }
 
@@ -284,8 +305,96 @@ function selectPhilosopher(philosopher, pencilEl) {
   const delay = 60 * (others.length - 1) + 350;
   setTimeout(() => {
     state.philosopher = philosopher;
-    loadAnswer();
+    playTransitionIn();
   }, delay);
+}
+
+/* ─── 전환 영상 제어 ─── */
+
+function hideVideoTransition(cb) {
+  transitionVideoIn.classList.remove('visible');
+  transitionVideoOut.classList.remove('visible');
+  videoTransition.classList.remove('fade-in');
+  setTimeout(() => {
+    videoTransition.classList.add('hidden');
+    // 다음 전환을 위해 src 초기화
+    transitionVideoIn.src  = '';
+    transitionVideoOut.src = '';
+    if (cb) cb();
+  }, 200);
+}
+
+function playTransitionIn() {
+  const meta     = philosopherMeta[state.philosopher];
+  const particle = subjectParticle(meta.ko);
+  transitionLoadingSentence.innerHTML = `${meta.ko}${particle}<br>생각 중입니다`;
+
+  // 초기 상태 리셋
+  transitionVideoIn.classList.remove('visible');
+  transitionVideoOut.classList.remove('visible');
+  transitionLoading.classList.remove('visible');
+  videoTransition.classList.remove('hidden');
+
+  // API 호출을 즉시 병렬로 시작
+  const apiPromise = fetchAnswerData(state.question, state.philosopher, state.shareConsent);
+  let apiResult  = null;
+  let videoEnded = false;
+
+  apiPromise.then(result => {
+    apiResult = result;
+    if (videoEnded) playTransitionOut(result);
+  });
+
+  // ① 현재 화면 → 흰색으로 페이드인 (0.2s)
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    videoTransition.classList.add('fade-in');
+  }));
+
+  // ② 흰 화면 위로 in.mp4 페이드인 (0.2s 후)
+  setTimeout(() => {
+    transitionVideoIn.src = '/videos/In.mp4';
+    transitionVideoIn.load();
+    transitionVideoIn.play().then(() => {
+      transitionVideoIn.classList.add('visible');
+      // in.mp4 재생 시작과 동시에 out.mp4 백그라운드 버퍼링
+      transitionVideoOut.src = '/videos/out.mp4';
+      transitionVideoOut.load();
+    }).catch(() => {
+      hideVideoTransition(() => apiPromise.then(r => showAnswerWithResult(r)));
+    });
+  }, 200);
+
+  transitionVideoIn.onended = () => {
+    videoEnded = true;
+    if (apiResult !== null) {
+      playTransitionOut(apiResult);
+    } else {
+      // API 대기 중 → 마지막 프레임 위에 로딩 메시지 표시
+      transitionLoading.classList.add('visible');
+    }
+  };
+}
+
+function playTransitionOut(result) {
+  // 로딩 메시지 페이드아웃
+  transitionLoading.classList.remove('visible');
+
+  setTimeout(() => {
+    // out.mp4는 이미 버퍼링됨 — src 교체 없이 바로 재생
+    transitionVideoOut.play().then(() => {
+      transitionVideoOut.classList.add('visible');
+      // in.mp4 마지막 프레임 페이드아웃 (out.mp4가 위에 올라오는 동안)
+      transitionVideoIn.classList.remove('visible');
+    }).catch(() => {
+      hideVideoTransition(() => showAnswerWithResult(result));
+    });
+
+    transitionVideoOut.onended = () => {
+      // 오버레이가 아직 덮고 있는 동안 답변 화면을 먼저 준비
+      showAnswerWithResult(result);
+      hideVideoTransition();
+    };
+  }, 200);
 }
 
 /* 드래그 이벤트 — 각 연필 아이템 */
@@ -375,26 +484,9 @@ window.addEventListener('mouseup',  e => releasePencil(e.clientX));
 // ─────────────────────────────────────────
 // STEP 3: 답변 로드
 // ─────────────────────────────────────────
-function loadAnswer() {
-  const meta = philosopherMeta[state.philosopher];
 
-  answerAvatarImg.src               = meta.avatar;
-  answerAvatarImg.alt               = meta.ko;
-  answerPhilosopherName.textContent = meta.en;
-  answerPhilosopherKo.textContent   = meta.ko;
-  recapQuestion.textContent         = state.question;
-
-  answerLoading.classList.remove('hidden');
-  answerContent.classList.add('hidden');
-  answerError.classList.add('hidden');
-  answerActions.classList.add('hidden');
-  answerText.textContent = '';
-
-  showStep('answer');
-  fetchAnswer(state.question, state.philosopher, state.shareConsent);
-}
-
-async function fetchAnswer(question, philosopher, shareConsent) {
+/* API만 호출해서 결과 객체를 반환 (화면 조작 없음) */
+async function fetchAnswerData(question, philosopher, shareConsent) {
   try {
     const res  = await fetch('/api/ask', {
       method:  'POST',
@@ -402,28 +494,113 @@ async function fetchAnswer(question, philosopher, shareConsent) {
       body:    JSON.stringify({ question, philosopher, shareConsent })
     });
     const data = await res.json();
-
-    answerLoading.classList.add('hidden');
-
-    if (!res.ok) {
-      errorMessage.textContent = data.error || '오류가 발생했습니다.';
-      answerError.classList.remove('hidden');
-    } else {
-      answerText.textContent = data.answer;
-      answerContent.classList.remove('hidden');
-      if (shareConsent) {
-        sessionStorage.setItem(LOCAL_STORAGE_KEYS.HAS_SHARED, 'true');
-        updateLockState();
-      }
-    }
-    answerActions.classList.remove('hidden');
-
+    return { ok: res.ok, data, shareConsent };
   } catch (err) {
-    answerLoading.classList.add('hidden');
-    errorMessage.textContent = '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.';
-    answerError.classList.remove('hidden');
-    answerActions.classList.remove('hidden');
+    return { ok: false, data: { error: '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.' }, shareConsent };
   }
+}
+
+/* 결과를 받아 답변 화면을 구성하고 표시 */
+function showAnswerWithResult({ ok, data, shareConsent }) {
+  const meta = philosopherMeta[state.philosopher];
+
+  answerAvatarImg.src               = meta.avatar;
+  answerAvatarImg.alt               = meta.ko;
+  answerPhilosopherName.textContent = meta.en;
+  answerPhilosopherKo.textContent   = meta.ko;
+  doctrineGreek.textContent         = meta.docGreek;
+  doctrineEn.textContent            = meta.docEn;
+  recapQuestion.textContent         = state.question;
+
+  // 초기화 (애니메이션 리셋 포함)
+  const headerWrapper = document.querySelector('.answer-header-wrapper');
+  headerWrapper.classList.remove('anim-in');
+  void headerWrapper.offsetWidth; // reflow로 애니메이션 재시작 보장
+
+  answerLoading.classList.add('hidden');
+  answerContent.classList.add('hidden');
+  answerContent.classList.remove('anim-slide');
+  answerError.classList.add('hidden');
+  answerActions.classList.add('hidden');
+  answerActions.classList.remove('anim-in');
+  answerText.innerHTML = '';
+
+  showStep('answer');
+
+  // B1: 아바타 + 이름 슬라이드업
+  requestAnimationFrame(() => {
+    headerWrapper.classList.add('anim-in');
+  });
+
+  if (!ok) {
+    errorMessage.textContent = data.error || '오류가 발생했습니다.';
+    answerError.classList.remove('hidden');
+    answerActions.style.opacity = '0';
+    answerActions.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      answerActions.style.opacity = '';
+      answerActions.classList.add('anim-in');
+    });
+    return;
+  }
+
+  // A2 + B1: 아바타 안착 후 텍스트 블록 슬라이드업 + 단어 순차 페이드인
+  const AVATAR_DELAY = 420; // ms — 아바타 애니메이션(600ms)의 70% 지점에서 텍스트 시작
+  const WORD_DELAY   = 32;  // ms — 단어 간 딜레이
+
+  // **텍스트** → { word, bold } 토큰 배열로 파싱
+  function parseAnswerTokens(text) {
+    const tokens = [];
+    const boldRegex = /\*\*(.+?)\*\*/g;
+    let lastIndex = 0;
+    let match;
+    while ((match = boldRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        text.slice(lastIndex, match.index).split(' ').filter(w => w).forEach(w => tokens.push({ word: w, bold: false }));
+      }
+      match[1].split(' ').filter(w => w).forEach(w => tokens.push({ word: w, bold: true }));
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      text.slice(lastIndex).split(' ').filter(w => w).forEach(w => tokens.push({ word: w, bold: false }));
+    }
+    return tokens;
+  }
+
+  setTimeout(() => {
+    const tokens = parseAnswerTokens(data.answer);
+    answerText.innerHTML = tokens
+      .map((t, i) => {
+        const inner = t.bold ? `<strong>${t.word}</strong>` : t.word;
+        return `<span class="answer-word" style="animation-delay:${i * WORD_DELAY}ms">${inner}</span>`;
+      })
+      .join(' ');
+
+    // 텍스트 블록 슬라이드업 (opacity:0으로 먼저 표시 후 애니메이션 트리거)
+    answerContent.style.opacity = '0';
+    answerContent.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      answerContent.style.opacity = '';
+      answerContent.classList.add('anim-slide');
+      answerText.querySelectorAll('.answer-word').forEach(span => span.classList.add('anim-in'));
+    });
+
+    if (shareConsent) {
+      sessionStorage.setItem(LOCAL_STORAGE_KEYS.HAS_SHARED, 'true');
+      updateLockState();
+    }
+
+    // 액션 버튼: 마지막 단어 완료 시점 or 최대 2.5초 후 페이드인
+    const actionDelay = Math.min(tokens.length * WORD_DELAY + 400, 2500);
+    setTimeout(() => {
+      answerActions.style.opacity = '0';
+      answerActions.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        answerActions.style.opacity = '';
+        answerActions.classList.add('anim-in');
+      });
+    }, actionDelay);
+  }, AVATAR_DELAY);
 }
 
 // ─────────────────────────────────────────
@@ -616,3 +793,33 @@ function formatRelativeTime(dateString) {
   if (diffDay < 7)   return `${diffDay}일 전`;
   return `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}`;
 }
+
+// ─────────────────────────────────────────
+// 기둥 패럴랙스 (step-answer 스크롤 시)
+// ─────────────────────────────────────────
+const pillarLeftImg  = document.querySelector('.side-pillar--left img');
+const pillarRightImg = document.querySelector('.side-pillar--right img');
+
+function updatePillarParallax() {
+  if (!steps.answer.classList.contains('active')) return;
+
+  const scrollY   = window.scrollY || document.documentElement.scrollTop;
+  const pillarEl  = document.querySelector('.side-pillar');
+  const pillarH   = pillarEl ? pillarEl.offsetHeight : window.innerHeight;
+  const extraH    = pillarH * 0.20; // img height: 120% → 20% 여유
+  const factor    = 0.35;           // 패럴랙스 속도 (1 = 스크롤 동일 속도)
+
+  // 아래로 스크롤 → 기둥 위로 이동 (음수), 이미지 끝 초과 방지
+  let ty = -(scrollY * factor);
+  ty = Math.max(-extraH, Math.min(0, ty));
+
+  if (pillarLeftImg)  pillarLeftImg.style.transform  = `scaleX(-1) translateY(${ty}px)`;
+  if (pillarRightImg) pillarRightImg.style.transform = `translateY(${ty}px)`;
+}
+
+function resetPillarParallax() {
+  if (pillarLeftImg)  pillarLeftImg.style.transform  = '';
+  if (pillarRightImg) pillarRightImg.style.transform = '';
+}
+
+window.addEventListener('scroll', updatePillarParallax, { passive: true });
