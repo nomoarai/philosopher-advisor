@@ -1,124 +1,278 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>철학자에게 묻다 — 직장 고민 솔루션</title>
   <meta name="description" content="직장 고민을 5명의 철학자 관점으로 풀어드립니다. 에피쿠로스, 플라톤, 아리스토텔레스, 헤라클리투스, 소크라테스의 지혜를 만나보세요." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <!-- 상단 고정 ECIFF 로고 헤더 -->
+  <button id="btn-global-home" class="btn-global-home" title="첫 화면으로">
+    <img src="/images/eciff.png" alt="ECIFF" />
+  </button>
 
-  <!-- ── STEP 1: 질문 입력 ── -->
-  <section id="step-question" class="step active">
-    <div class="container">
-      <header class="site-header">
-        <p class="site-label">철학자에게 묻다</p>
-        <h1 class="site-title">지금 어떤 고민이 있으신가요?</h1>
-        <p class="site-desc">직장에서의 고민을 적어주세요.<br/>5명의 철학자 중 한 명이 당신만의 답을 드립니다.</p>
-      </header>
+  <!-- 메인 앱 컨테이너 -->
+  <main class="app-main">
 
-      <div class="question-form">
-        <textarea
-          id="question-input"
-          placeholder="예) 상사와 자꾸 마찰이 생겨서 출근하기가 싫습니다. 어떻게 해야 할까요?"
-          maxlength="500"
-          rows="6"
-        ></textarea>
-        <div class="char-count"><span id="char-current">0</span> / 500</div>
-        <button id="btn-next-step" class="btn-primary" disabled>철학자 선택하기 →</button>
-      </div>
-    </div>
-  </section>
+    <!-- [탭 1] 고민 상담 탭 -->
+    <div id="tab-ask" class="tab-content active">
 
-  <!-- ── STEP 2: 철학자 선택 ── -->
-  <section id="step-philosopher" class="step">
-    <div class="container">
-      <header class="step-header">
-        <button id="btn-back-question" class="btn-back">← 다시 쓰기</button>
-        <h2 class="step-title">누구에게 물어볼까요?</h2>
-        <p class="step-desc">한 명을 선택하면 그의 시각으로 답을 드립니다.</p>
-      </header>
-
-      <div class="philosopher-grid">
-        <button class="philosopher-card" data-philosopher="epicurus" id="card-epicurus">
-          <div class="card-name-en">Epicurus</div>
-          <div class="card-name-ko">에피쿠로스</div>
-          <div class="card-keyword">쾌락 · 평온 · 소박한 행복</div>
-          <div class="card-desc">불필요한 욕망과 두려움을 걷어내고 진정한 행복을 찾도록 이끕니다.</div>
-        </button>
-
-        <button class="philosopher-card" data-philosopher="plato" id="card-plato">
-          <div class="card-name-en">Plato</div>
-          <div class="card-name-ko">플라톤</div>
-          <div class="card-keyword">이상 · 진리 · 완전한 형상</div>
-          <div class="card-desc">현실 너머 이상적인 상태를 바라보며 본질적인 문제를 직시합니다.</div>
-        </button>
-
-        <button class="philosopher-card" data-philosopher="aristoteles" id="card-aristoteles">
-          <div class="card-name-en">Aristoteles</div>
-          <div class="card-name-ko">아리스토텔레스</div>
-          <div class="card-keyword">실용 · 중용 · 논리</div>
-          <div class="card-desc">감정과 이성의 균형을 찾아 현실적이고 구체적인 방향을 제시합니다.</div>
-        </button>
-
-        <button class="philosopher-card" data-philosopher="heraclitus" id="card-heraclitus">
-          <div class="card-name-en">Heraclitus</div>
-          <div class="card-name-ko">헤라클리투스</div>
-          <div class="card-keyword">변화 · 흐름 · 역설</div>
-          <div class="card-desc">모든 것은 흐른다는 시각으로 고민을 변화의 일부로 바라보게 합니다.</div>
-        </button>
-
-        <button class="philosopher-card" data-philosopher="socrates" id="card-socrates">
-          <div class="card-name-en">Socrates</div>
-          <div class="card-name-ko">소크라테스</div>
-          <div class="card-keyword">질문 · 자기인식 · 성찰</div>
-          <div class="card-desc">날카로운 질문으로 당신이 이미 알고 있는 답을 스스로 찾게 합니다.</div>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── STEP 3: 답변 화면 ── -->
-  <section id="step-answer" class="step">
-    <div class="container">
-      <button id="btn-back-philosopher" class="btn-back">← 다른 철학자 선택</button>
-
-      <div class="answer-header">
-        <div id="answer-philosopher-name" class="answer-philosopher-name"></div>
-        <div id="answer-philosopher-ko" class="answer-philosopher-ko"></div>
-      </div>
-
-      <div class="question-recap">
-        <div class="recap-label">당신의 고민</div>
-        <div id="recap-question" class="recap-text"></div>
-      </div>
-
-      <div id="answer-loading" class="answer-loading">
-        <div class="loading-dots">
-          <span></span><span></span><span></span>
+      <!-- ── STEP 0: 인트로 랜딩 페이지 ── -->
+      <section id="step-intro" class="step active">
+        <!-- ▼ BG 레이어 ▼ -->
+        <div class="intro-bg-layer">
+          <div class="intro-bg-top">
+            <img src="/images/Hero_top.png" alt="" />
+          </div>
+          <div class="intro-bg-bottom">
+            <img src="/images/Hero_bottom.png" alt="" />
+          </div>
         </div>
-        <p>생각하는 중...</p>
-      </div>
 
-      <div id="answer-content" class="answer-content hidden">
-        <div class="answer-label">철학자의 답변</div>
-        <div id="answer-text" class="answer-text"></div>
-      </div>
+        <!-- ▼ 콘텐츠 레이어 ▼ -->
+        <div class="intro-content-layer">
+          <div class="intro-logo">
+            <img src="/images/eciff.png" alt="ECIFF" />
+          </div>
 
-      <div id="answer-error" class="answer-error hidden">
-        <p id="error-message"></p>
-      </div>
+          <div class="intro-main-box">
+            <div class="intro-title-wrapper">
+              <img src="/images/Temple of insight.png" alt="TEMPLE OF INSIGHT" class="intro-title-img"
+                onerror="this.style.display='none'; document.getElementById('intro-title-fallback').style.display='block';" />
+              <h1 class="intro-title-text" id="intro-title-fallback">TEMPLE OF<br>INSIGHT</h1>
+            </div>
+            <p class="intro-desc">
+              일을 하면서 고민이 있으신가요?<br>
+              말 못할 고민들 5명의 철학자와 함께<br>
+              고민을 털어놓으세요.
+            </p>
+            <button id="btn-start-intro" class="intro-cta-btn">고민 털어놓기</button>
+          </div>
+        </div>
+      </section>
 
-      <div class="answer-actions hidden" id="answer-actions">
-        <button id="btn-restart" class="btn-secondary">새 고민 시작하기</button>
-        <button id="btn-try-other" class="btn-primary">다른 철학자에게 묻기</button>
+      <!-- ── STEP 1: 질문 입력 ── -->
+      <section id="step-question" class="step">
+        <div class="container">
+          <header class="question-step-header">
+            <p class="question-step-label">Temple of Wisdom</p>
+            <h2 class="question-step-title">지금 어떤 고민이 <br /> 있으신가요?</h2>
+            <p class="question-step-desc">직장에서의 말 못 할 고민을 적어주세요.<br />고대 그리스 철학자들이 깊은 지혜로 응답합니다.</p>
+          </header>
+          <div class="question-form">
+            <textarea id="question-input" placeholder="예) 상사와 자꾸 마찰이 생겨서 출근하기가 싫습니다. 어떻게 해야 할까요?" maxlength="500"
+              rows="6"></textarea>
+
+            <!-- 질문 하단 영역: 체크박스 & 글자수 -->
+            <div class="form-footer">
+              <div class="share-consent-wrapper">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="share-consent-checkbox" />
+                  <span class="checkmark"></span>
+                  <span class="checkbox-text">
+                    내 고민을 익명으로 공유하고 다른 이들의 지혜 나누기
+                    <br><span class="consent-highlight">(동의하지 않으면 아고라 참가가 불가능합니다)</span>
+                  </span>
+                </label>
+              </div>
+              <div class="char-count"><span id="char-current">0</span> / 500</div>
+            </div>
+
+            <button id="btn-next-step" class="btn-primary" disabled>철학자 선택하기 →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STEP 2: 철학자 선택 ── -->
+      <section id="step-philosopher" class="step">
+        <div class="container">
+          <header class="step-header">
+            <button id="btn-back-question" class="btn-back">← 다시 쓰기</button>
+            <h2 class="step-title">누구에게 물어볼까요?</h2>
+            <p class="step-desc">지혜의 신전에서 철학자를 선택해 고민의 본질을 밝혀보세요.</p>
+          </header>
+
+          <!-- 미니멀한 3D 캐러셀 프레임 -->
+          <div class="carousel-container-wrapper">
+
+            <!-- 3D 캐러셀 스테이지 -->
+            <div class="carousel-stage" id="carousel-stage">
+              <div class="carousel-track" id="carousel-track">
+
+                <button class="philosopher-card" data-philosopher="epicurus" id="card-epicurus">
+                  <div class="philosopher-illustration">
+                    <img src="/images/epicurus@2x.png" alt="에피쿠로스" />
+                  </div>
+                  <h3 class="card-name-ko">에피쿠로스</h3>
+                  <p class="card-desc">불필요한 불안을 걷어내고 평온을 찾는 법</p>
+                </button>
+
+                <button class="philosopher-card" data-philosopher="plato" id="card-plato">
+                  <div class="philosopher-illustration">
+                    <img src="/images/plato@2x.png" alt="플라톤" />
+                  </div>
+                  <h3 class="card-name-ko">플라톤</h3>
+                  <p class="card-desc">현실 너머 이상과 본질적인 가치를 직시하는 법</p>
+                </button>
+
+                <button class="philosopher-card" data-philosopher="aristoteles" id="card-aristoteles">
+                  <div class="philosopher-illustration">
+                    <img src="/images/aristoteles@2x.png" alt="아리스토텔레스" />
+                  </div>
+                  <h3 class="card-name-ko">아리스토텔레스</h3>
+                  <p class="card-desc">실용적 조화와 중용으로 지혜로운 행동을 찾는 법</p>
+                </button>
+
+                <button class="philosopher-card" data-philosopher="heraclitus" id="card-heraclitus">
+                  <div class="philosopher-illustration">
+                    <img src="/images/heraclitus@2x.png" alt="헤라클리투스" />
+                  </div>
+                  <h3 class="card-name-ko">헤라클리투스</h3>
+                  <p class="card-desc">모든 것을 변화의 자연스러운 흐름으로 직시하는 법</p>
+                </button>
+
+                <button class="philosopher-card" data-philosopher="socrates" id="card-socrates">
+                  <div class="philosopher-illustration">
+                    <img src="/images/socrates@2x.png" alt="소크라테스" />
+                  </div>
+                  <h3 class="card-name-ko">소크라테스</h3>
+                  <p class="card-desc">질문을 통해 내면 속 스스로의 답을 꺼내는 법</p>
+                </button>
+
+              </div>
+            </div>
+
+            <!-- 캐러셀 조작 컨트롤러 -->
+            <div class="carousel-controls">
+              <button id="btn-prev-carousel" class="btn-carousel-nav" title="이전 현인">◀</button>
+              <button id="btn-select-philosopher" class="btn-primary">이 현인의 조언 구하기</button>
+              <button id="btn-next-carousel" class="btn-carousel-nav" title="다음 현인">▶</button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STEP 3: 답변 화면 ── -->
+      <section id="step-answer" class="step">
+        <div class="container">
+          <button id="btn-back-philosopher" class="btn-back">← 다른 철학자 선택</button>
+
+          <div class="answer-header-wrapper">
+            <div class="answer-philosopher-avatar">
+              <img id="answer-avatar-img" src="/images/epicurus@2x.png" alt="철학자 아바타" />
+            </div>
+            <div class="answer-header">
+              <div id="answer-philosopher-name" class="answer-philosopher-name"></div>
+              <div id="answer-philosopher-ko" class="answer-philosopher-ko"></div>
+            </div>
+          </div>
+
+          <div class="question-recap">
+            <div class="recap-label">당신의 고민</div>
+            <div id="recap-question" class="recap-text"></div>
+          </div>
+
+          <div id="answer-loading" class="answer-loading">
+            <div class="loading-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <p>생각하는 중...</p>
+          </div>
+
+          <div id="answer-content" class="answer-content hidden">
+            <div class="answer-label">철학자의 답변</div>
+            <div id="answer-text" class="answer-text"></div>
+          </div>
+
+          <div id="answer-error" class="answer-error hidden">
+            <p id="error-message"></p>
+          </div>
+
+          <div class="answer-actions hidden" id="answer-actions">
+            <button id="btn-restart" class="btn-secondary">새 고민 시작하기</button>
+            <button id="btn-try-other" class="btn-primary">다른 철학자에게 묻기</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- [탭 2] 아고라 탭 -->
+    <div id="tab-community" class="tab-content">
+      <div class="container">
+
+        <header class="community-header">
+          <span class="community-label">Agora of Wisdom</span>
+          <h1 class="community-title">지혜의 아고라</h1>
+          <p class="community-desc">아고라 광장에서 다른 이들이 나눈 직장 고민과 철학자들의 통찰을 공유하고 토론해보세요.</p>
+        </header>
+
+        <!-- 본인이 고민을 공유하지 않았을 때 노출될 잠금 화면 -->
+        <div id="community-lock" class="community-placeholder-card">
+          <div class="lock-icon">🔒</div>
+          <h3 class="placeholder-title">아고라 광장이 잠겨 있습니다</h3>
+          <p class="placeholder-desc">본인의 고민과 답변을 아고라 광장에 먼저 상정(공유)해야 아고라 입장이 가능합니다.</p>
+          <button id="btn-go-ask" class="btn-primary">내 고민 공유하러 가기</button>
+        </div>
+
+        <!-- 본인이 고민을 공유했을 때 노출될 실제 아고라 영역 -->
+        <div id="community-active" class="hidden">
+          <div class="community-toolbar">
+            <div class="filter-buttons">
+              <button id="filter-latest" class="filter-btn active">최신순</button>
+              <button id="filter-likes" class="filter-btn">공감순</button>
+            </div>
+            <button id="btn-admin-auth" class="btn-admin-auth" title="관리자 모드">⚙️</button>
+          </div>
+
+          <div id="community-posts-list" class="posts-list">
+            <!-- 동적으로 생성될 포스트 카드 영역 -->
+          </div>
+        </div>
+
       </div>
     </div>
-  </section>
+
+  </main>
+
+  <!-- 하단 네비게이션 탭바 -->
+  <nav class="bottom-tab-bar">
+    <button class="tab-item active" id="tab-btn-ask">
+      <span class="tab-label">고민 상담</span>
+    </button>
+    <button class="tab-item" id="tab-btn-community">
+      <span class="tab-label">아고라</span>
+    </button>
+  </nav>
+
+  <!-- 스케치 SVG 필터 정의 (숨김) -->
+  <svg id="svg-filters" xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <defs>
+      <filter id="sketchy" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.032" numOctaves="4" seed="7" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- 좌우 기둥 장식 (step-question, step-philosopher에서만 표시) -->
+  <div class="side-pillar side-pillar--left" aria-hidden="true">
+    <img src="/images/side bg.png" alt="" />
+  </div>
+  <div class="side-pillar side-pillar--right" aria-hidden="true">
+    <img src="/images/side bg.png" alt="" />
+  </div>
 
   <script src="app.js"></script>
 </body>
+
 </html>
