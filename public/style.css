@@ -1,33 +1,51 @@
 /* ─────────────────────────────────────────
    기본 리셋 & 프리미엄 그리스 화이트 테마 토큰
    ───────────────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 :root {
-  --color-bg: #ffffff;          /* Pure White Canvas */
-  --color-surface: #ffffff;     /* Pure White Surface */
-  --color-surface-card: #f8f8f8;/* Light Grey Card */
-  --color-surface-dark: #111111;/* Dark Charcoal/Black */
-  --color-border: #222222;      /* Sketch Ink Border */
-  --color-text-primary: #111111;/* Dark Ink Text */
-  --color-text-secondary: #444444;/* Body Text */
-  --color-text-muted: #888888;   /* Muted Text */
-  --color-accent: #000000;      /* Black Accent */
-  --color-accent-hover: #222222;/* Charcoal Hover */
-  --color-gold: #888888;        /* Muted Grey */
-  --color-gold-hover: #666666;  
-  --color-card-hover: #f0f0f0;   /* Light Grey Hover */
-  --color-selected: #000000;    /* Black Border */
-  --color-heart: #000000;       /* Black Heart Icon */
-  
+  --color-bg: #ffffff;
+  /* Pure White Canvas */
+  --color-surface: #ffffff;
+  /* Pure White Surface */
+  --color-surface-card: #f8f8f8;
+  /* Light Grey Card */
+  --color-surface-dark: #111111;
+  /* Dark Charcoal/Black */
+  --color-border: #222222;
+  /* Sketch Ink Border */
+  --color-text-primary: #111111;
+  /* Dark Ink Text */
+  --color-text-secondary: #444444;
+  /* Body Text */
+  --color-text-muted: #888888;
+  /* Muted Text */
+  --color-accent: #000000;
+  /* Black Accent */
+  --color-accent-hover: #222222;
+  /* Charcoal Hover */
+  --color-gold: #888888;
+  /* Muted Grey */
+  --color-gold-hover: #666666;
+  --color-card-hover: #f0f0f0;
+  /* Light Grey Hover */
+  --color-selected: #000000;
+  /* Black Border */
+  --color-heart: #000000;
+  /* Black Heart Icon */
+
   --font-serif: 'Times New Roman', 'Noto Serif KR', serif;
   --font-sans: 'Noto Sans KR', sans-serif;
-  --radius: 3px;                /* sketch-friendly */
-  --radius-lg: 4px;             /* sketch-friendly */
+  --radius: 3px;
+  /* sketch-friendly */
+  --radius-lg: 4px;
+  /* sketch-friendly */
   --transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -41,8 +59,10 @@ body {
   color: var(--color-text-primary);
   line-height: 1.7;
   min-height: 100vh;
-  padding-top: 56px; /* 상단 고정 ECIFF 헤더 높이 */
-  padding-bottom: 140px; /* 하단 고정 탭바 높이보다 넉넉하게 지정하여 메인 콘텐츠 가림 방지 */
+  padding-top: 56px;
+  /* 상단 고정 ECIFF 헤더 높이 */
+  padding-bottom: 140px;
+  /* 하단 고정 탭바 높이보다 넉넉하게 지정하여 메인 콘텐츠 가림 방지 */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -94,8 +114,15 @@ body:has(#step-intro.active) {
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─────────────────────────────────────────
@@ -213,11 +240,11 @@ textarea::placeholder {
   transition: background-color var(--transition), border-color var(--transition);
 }
 
-.checkbox-container:hover input ~ .checkmark {
+.checkbox-container:hover input~.checkmark {
   border-color: var(--color-accent);
 }
 
-.checkbox-container input:checked ~ .checkmark {
+.checkbox-container input:checked~.checkmark {
   background-color: var(--color-accent);
   border-color: var(--color-accent);
 }
@@ -235,7 +262,7 @@ textarea::placeholder {
   transform: rotate(45deg);
 }
 
-.checkbox-container input:checked ~ .checkmark::after {
+.checkbox-container input:checked~.checkmark::after {
   display: block;
 }
 
@@ -264,14 +291,37 @@ textarea::placeholder {
 
 /* 버튼 테두리 wobbly 애니메이션 — 범위 확대 */
 @keyframes sketch-morph {
-  0%   { border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px; }
-  14%  { border-radius: 3px 1px 4px 1px / 1px 4px 1px 3px; }
-  28%  { border-radius: 4px 1px 1px 3px / 1px 2px 4px 1px; }
-  42%  { border-radius: 1px 4px 2px 1px / 4px 1px 1px 4px; }
-  57%  { border-radius: 2px 2px 1px 4px / 2px 1px 4px 1px; }
-  71%  { border-radius: 1px 4px 4px 1px / 4px 2px 1px 3px; }
-  85%  { border-radius: 4px 1px 3px 2px / 1px 4px 2px 1px; }
-  100% { border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px; }
+  0% {
+    border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
+  }
+
+  14% {
+    border-radius: 3px 1px 4px 1px / 1px 4px 1px 3px;
+  }
+
+  28% {
+    border-radius: 4px 1px 1px 3px / 1px 2px 4px 1px;
+  }
+
+  42% {
+    border-radius: 1px 4px 2px 1px / 4px 1px 1px 4px;
+  }
+
+  57% {
+    border-radius: 2px 2px 1px 4px / 2px 1px 4px 1px;
+  }
+
+  71% {
+    border-radius: 1px 4px 4px 1px / 4px 2px 1px 3px;
+  }
+
+  85% {
+    border-radius: 4px 1px 3px 2px / 1px 4px 2px 1px;
+  }
+
+  100% {
+    border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
+  }
 }
 
 /* 버튼 테두리에 스케치 필터 */
@@ -279,20 +329,6 @@ textarea::placeholder {
   filter: url(#sketchy);
 }
 
-/* 철학자 카드: 테두리에만 스케치 효과 (텍스트 제외) */
-.philosopher-card {
-  border: none; /* 기본 border 제거, ::before로 대체 */
-}
-
-.philosopher-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 2px solid #111111;
-  border-radius: 2px;
-  pointer-events: none;
-  filter: url(#sketchy);
-}
 
 /* ─────────────────────────────────────────
    버튼 컴포넌트
@@ -367,10 +403,10 @@ textarea::placeholder {
 }
 
 /* ─────────────────────────────────────────
-   STEP 2 — 캐릭터 선택 3D 캐러셀
+   STEP 2 — 연필 선택 UI
    ───────────────────────────────────────── */
 .step-header {
-  margin-bottom: 28px;
+  margin-bottom: 8px;
   text-align: center;
 }
 
@@ -388,138 +424,105 @@ textarea::placeholder {
   color: var(--color-text-secondary);
 }
 
-/* 미니멀한 3D 캐러셀 컨테이너 구조 */
-.carousel-container-wrapper {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  margin-top: 10px;
-  background: transparent;
+/* 연필 스택이 뷰포트 밖으로 드래그될 때 clip */
+#step-philosopher {
+  overflow-x: clip;
 }
 
-/* 2D 카드 스테이지 */
-.carousel-stage {
-  height: 380px;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* 철학자 선택 스텝: 연필이 좌우 여백 없이 가득 채우도록 */
+#step-philosopher .container {
+  padding-left: 0;
+  padding-right: 0;
 }
 
-.carousel-track {
-  width: 100%;
-  height: 100%;
-  position: relative;
+/* 헤더와 힌트 바는 기존 여백 유지 */
+#step-philosopher .step-header {
+  padding: 0 20px;
 }
 
-/* 철학자 카드 — 2D 플랫 스케치 스타일 */
-.philosopher-card {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 240px;
-  height: 320px;
-  background: var(--color-surface);
-  border: 2px solid #111111;
-  border-radius: 2px;
-  cursor: pointer;
-  text-align: center;
-  transition: opacity 0.35s ease;
-  color: inherit;
-  outline: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 16px;
-  box-sizing: border-box;
-  transform: translate(-50%, -50%);
-  touch-action: pan-y;
-  opacity: 0;
-  visibility: hidden;
+#step-philosopher .pencil-hint-bar {
+  padding: 0 20px;
 }
 
-.philosopher-card.active-card {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* 철학자 일러스트 영역 */
-.philosopher-illustration {
-  width: 100%;
-  height: 140px;
+/* 드래그 힌트 바 */
+.pencil-hint-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-  flex-shrink: 0;
-}
-
-.philosopher-illustration img {
-  height: 100%;
-  width: auto;
-  object-fit: contain;
-}
-
-/* 철학자 이름 (굵고 큰 명조체, Copernicus/Times New Roman 느낌으로 400 굵기 변경) */
-.card-name-ko {
-  font-family: var(--font-serif);
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--color-text-primary);
-  margin: 0 0 10px 0;
-  letter-spacing: -0.5px;
-  text-align: center;
-}
-
-/* 철학자 조언 설명 */
-.card-desc {
-  font-family: var(--font-sans);
+  gap: 8px;
+  margin: 12px 0 20px;
+  color: var(--color-text-muted);
   font-size: 13px;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-  margin: 0;
-  text-align: center;
-  word-break: keep-all;
-  max-width: 95%;
+  transition: opacity 0.4s ease;
 }
 
-/* 캐러셀 조작 컨트롤러 */
-.carousel-controls {
+.pencil-hint-arrow {
+  font-size: 16px;
+  display: inline-block;
+  animation: hintArrowBounce 1.1s ease-in-out infinite;
+}
+
+@keyframes hintArrowBounce {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(6px);
+  }
+}
+
+/* 연필 스택 */
+.pencil-stack {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 24px;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* 개별 연필 아이템 — 우측 3/4 비우고 좌측에 연필 끝만 노출 */
+.pencil-item {
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+  /* 수평 드래그는 JS가 캡처, 수직 스크롤은 브라우저 처리 */
+  position: relative;
+  opacity: 0;
+  /* initPencilInteraction에서 JS로 슬라이드인 */
+  /* 이미지 크기는 그대로 유지(100% + 60px),
+     margin-left를 더 당겨 우측 25vw 지점에서 오른쪽 끝이 맞도록 */
+  width: calc(100% + 60px);
+  margin-left: calc(-25vw - 60px);
+}
+
+.pencil-item.dragging {
+  cursor: grabbing;
+}
+
+.pencil-item img {
   width: 100%;
-  box-sizing: border-box;
+  height: auto;
+  display: block;
+  pointer-events: none;
 }
 
-.btn-carousel-nav {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--color-surface);
-  border: 2px solid #111111;
-  color: var(--color-text-primary);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition);
+/* 힌트 흔들기 애니메이션 */
+@keyframes pencilHintWiggle {
+  0% {
+    transform: translateX(0);
+  }
+
+  45% {
+    transform: translateX(38px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
 }
 
-.btn-carousel-nav:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-  background: var(--color-card-hover);
-  transform: scale(1.05);
-}
-
-.btn-carousel-nav:active {
-  transform: scale(0.95);
+.pencil-item.hint-wiggle {
+  animation: pencilHintWiggle 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
 
 /* ─────────────────────────────────────────
@@ -614,13 +617,31 @@ textarea::placeholder {
   animation: bounce 1.2s infinite ease-in-out;
 }
 
-.loading-dots span:nth-child(1) { animation-delay: 0s; }
-.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+.loading-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes bounce {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-  40%            { transform: scale(1.1);   opacity: 1; }
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.3;
+  }
+
+  40% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 /* 답변 본문 */
@@ -726,8 +747,15 @@ textarea::placeholder {
 }
 
 @keyframes floatLock {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 .placeholder-title {
@@ -902,8 +930,8 @@ textarea::placeholder {
   padding: 0 20px;
   border-top: 2px dashed transparent;
   transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
-              opacity 0.25s ease,
-              padding 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    opacity 0.25s ease,
+    padding 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* 펼쳐진 답변 상태 */
@@ -962,9 +990,17 @@ textarea::placeholder {
 }
 
 @keyframes heartPop {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.5); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.5);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ─────────────────────────────────────────
@@ -988,7 +1024,8 @@ textarea::placeholder {
   background: transparent;
   border: none;
   outline: none;
-  color: #888888; /* on-dark-soft */
+  color: #888888;
+  /* on-dark-soft */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1001,11 +1038,13 @@ textarea::placeholder {
 }
 
 .tab-item:hover {
-  color: #ffffff; /* on-dark */
+  color: #ffffff;
+  /* on-dark */
 }
 
 .tab-item.active {
-  color: #ffffff; /* on-dark */
+  color: #ffffff;
+  /* on-dark */
 }
 
 .tab-icon {
@@ -1115,7 +1154,7 @@ textarea::placeholder {
   .container {
     padding: 30px 16px 50px;
   }
-  
+
   .question-step-title {
     font-size: 22px;
   }
@@ -1124,74 +1163,53 @@ textarea::placeholder {
     font-size: 13px;
   }
 
-  .philosopher-card {
-    padding: 16px 12px;
-    gap: 12px;
-    width: 220px;
-    height: 330px;
-  }
-  
-  .philosopher-card .philosopher-illustration {
-    height: 120px;
-    margin-bottom: 12px;
-  }
-  
-  .card-name-ko {
-    font-size: 22px;
-    margin-bottom: 6px;
-  }
-  
-  .card-desc {
-    font-size: 12px;
-    line-height: 1.4;
-  }
-  
   .answer-header-wrapper {
     margin-bottom: 20px;
   }
-  
+
   .answer-philosopher-avatar {
     width: 56px;
     height: 56px;
   }
-  
+
   .answer-philosopher-name {
     font-size: 22px;
   }
-  
+
   .answer-content {
     padding: 20px;
   }
-  
+
   .answer-text {
     font-size: 15px;
   }
-  
+
   .answer-actions {
     flex-direction: column;
     gap: 8px;
   }
-  
-  .btn-primary, .btn-secondary {
+
+  .btn-primary,
+  .btn-secondary {
     width: 100%;
     text-align: center;
     padding: 14px 20px;
   }
-  
+
   .form-footer {
     flex-direction: column;
     align-items: flex-end;
     gap: 10px;
   }
-  
+
   .share-consent-wrapper {
     width: 100%;
   }
-  
+
   .post-card {
     padding: 0;
   }
-  
+
   .post-answer {
     font-size: 14px;
   }
@@ -1202,9 +1220,11 @@ textarea::placeholder {
    ───────────────────────────────────────── */
 .side-pillar {
   position: fixed;
-  top: 56px; /* ECIFF 헤더 아래부터 */
+  top: 56px;
+  /* ECIFF 헤더 아래부터 */
   width: 24vw;
-  height: calc(100vh - 56px - 60px); /* 헤더 + 하단 탭바 제외 */
+  height: calc(100vh - 56px - 60px);
+  /* 헤더 + 하단 탭바 제외 */
   overflow: hidden;
   pointer-events: none;
   z-index: 10;
@@ -1234,16 +1254,14 @@ textarea::placeholder {
   transform: scaleX(-1);
 }
 
-/* step-question 또는 step-philosopher 활성화 시 기둥 표시 */
-body:has(#step-question.active) .side-pillar,
-body:has(#step-philosopher.active) .side-pillar {
+/* step-question 활성화 시 기둥 표시 (philosopher 단계는 기둥 없음) */
+body:has(#step-question.active) .side-pillar {
   opacity: 1;
   visibility: visible;
 }
 
 /* 기둥 활성 시 컨텐츠 영역이 기둥과 겹치지 않도록 중앙 정렬 보장 */
-body:has(#step-question.active) #step-question .container,
-body:has(#step-philosopher.active) #step-philosopher .container {
+body:has(#step-question.active) #step-question .container {
   max-width: 52vw;
   margin-left: auto;
   margin-right: auto;
@@ -1261,8 +1279,7 @@ body:has(#tab-community.active) .side-pillar {
     width: 18vw;
   }
 
-  body:has(#step-question.active) #step-question .container,
-  body:has(#step-philosopher.active) #step-philosopher .container {
+  body:has(#step-question.active) #step-question .container {
     max-width: 64vw;
   }
 }
@@ -1276,9 +1293,11 @@ body:has(#step-intro.active) {
   padding-top: 0;
   padding-bottom: 0;
 }
+
 body:has(#step-intro.active) .bottom-tab-bar {
   display: none !important;
 }
+
 body:has(#step-intro.active) .btn-global-home {
   display: none !important;
 }
@@ -1301,7 +1320,7 @@ body:has(#step-intro.active) .btn-global-home {
   left: 0;
   right: 0;
   height: 140px;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.55) 55%, transparent 100%);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.55) 55%, transparent 100%);
   z-index: 1;
   pointer-events: none;
 }
@@ -1323,6 +1342,7 @@ body:has(#step-intro.active) .btn-global-home {
   width: 110%;
   max-width: 560px;
 }
+
 .intro-bg-top img {
   width: 100%;
   height: auto;
@@ -1338,6 +1358,7 @@ body:has(#step-intro.active) .btn-global-home {
   width: 110%;
   max-width: 560px;
 }
+
 .intro-bg-bottom img {
   width: 100%;
   height: auto;
@@ -1366,6 +1387,7 @@ body:has(#step-intro.active) .btn-global-home {
   justify-content: center;
   flex-shrink: 0;
 }
+
 .intro-logo img {
   height: 100%;
   width: auto;
@@ -1389,6 +1411,7 @@ body:has(#step-intro.active) .btn-global-home {
   flex-direction: column;
   align-items: center;
 }
+
 .intro-title-img {
   width: 100%;
   max-width: 300px;
@@ -1440,10 +1463,12 @@ body:has(#step-intro.active) .btn-global-home {
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
+
 .intro-cta-btn:hover {
   background-color: #333333;
   transform: translateY(-1px);
 }
+
 .intro-cta-btn:active {
   transform: translateY(1px);
 }
@@ -1453,13 +1478,16 @@ body:has(#step-intro.active) .btn-global-home {
   .intro-content-layer {
     padding: 36px 20px 44px;
   }
+
   .intro-title-img {
     max-width: 250px;
   }
+
   .intro-desc {
     font-size: 13px;
     line-height: 1.65;
   }
+
   .intro-bg-top,
   .intro-bg-bottom {
     width: 100%;

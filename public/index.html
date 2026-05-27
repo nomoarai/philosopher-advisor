@@ -97,64 +97,36 @@
           <header class="step-header">
             <button id="btn-back-question" class="btn-back">← 다시 쓰기</button>
             <h2 class="step-title">누구에게 물어볼까요?</h2>
-            <p class="step-desc">지혜의 신전에서 철학자를 선택해 고민의 본질을 밝혀보세요.</p>
+            <p class="step-desc">연필을 오른쪽으로 당겨 철학자를 선택하세요.</p>
           </header>
 
-          <!-- 미니멀한 3D 캐러셀 프레임 -->
-          <div class="carousel-container-wrapper">
+          <!-- 드래그 힌트 바 -->
+          <div class="pencil-hint-bar" id="pencil-hint-bar">
+            <span class="pencil-hint-arrow">→</span>
+            <span class="pencil-hint-text">연필을 당겨보세요</span>
+          </div>
 
-            <!-- 3D 캐러셀 스테이지 -->
-            <div class="carousel-stage" id="carousel-stage">
-              <div class="carousel-track" id="carousel-track">
+          <!-- 연필 스택 -->
+          <div class="pencil-stack" id="pencil-stack">
 
-                <button class="philosopher-card" data-philosopher="epicurus" id="card-epicurus">
-                  <div class="philosopher-illustration">
-                    <img src="/images/epicurus@2x.png" alt="에피쿠로스" />
-                  </div>
-                  <h3 class="card-name-ko">에피쿠로스</h3>
-                  <p class="card-desc">불필요한 불안을 걷어내고 평온을 찾는 법</p>
-                </button>
-
-                <button class="philosopher-card" data-philosopher="plato" id="card-plato">
-                  <div class="philosopher-illustration">
-                    <img src="/images/plato@2x.png" alt="플라톤" />
-                  </div>
-                  <h3 class="card-name-ko">플라톤</h3>
-                  <p class="card-desc">현실 너머 이상과 본질적인 가치를 직시하는 법</p>
-                </button>
-
-                <button class="philosopher-card" data-philosopher="aristoteles" id="card-aristoteles">
-                  <div class="philosopher-illustration">
-                    <img src="/images/aristoteles@2x.png" alt="아리스토텔레스" />
-                  </div>
-                  <h3 class="card-name-ko">아리스토텔레스</h3>
-                  <p class="card-desc">실용적 조화와 중용으로 지혜로운 행동을 찾는 법</p>
-                </button>
-
-                <button class="philosopher-card" data-philosopher="heraclitus" id="card-heraclitus">
-                  <div class="philosopher-illustration">
-                    <img src="/images/heraclitus@2x.png" alt="헤라클리투스" />
-                  </div>
-                  <h3 class="card-name-ko">헤라클리투스</h3>
-                  <p class="card-desc">모든 것을 변화의 자연스러운 흐름으로 직시하는 법</p>
-                </button>
-
-                <button class="philosopher-card" data-philosopher="socrates" id="card-socrates">
-                  <div class="philosopher-illustration">
-                    <img src="/images/socrates@2x.png" alt="소크라테스" />
-                  </div>
-                  <h3 class="card-name-ko">소크라테스</h3>
-                  <p class="card-desc">질문을 통해 내면 속 스스로의 답을 꺼내는 법</p>
-                </button>
-
-              </div>
+            <div class="pencil-item" data-philosopher="epicurus" data-ko="에피쿠로스">
+              <img src="/images/epicurus pencil@2x.png" alt="에피쿠로스" draggable="false" />
             </div>
 
-            <!-- 캐러셀 조작 컨트롤러 -->
-            <div class="carousel-controls">
-              <button id="btn-prev-carousel" class="btn-carousel-nav" title="이전 현인">◀</button>
-              <button id="btn-select-philosopher" class="btn-primary">이 현인의 조언 구하기</button>
-              <button id="btn-next-carousel" class="btn-carousel-nav" title="다음 현인">▶</button>
+            <div class="pencil-item" data-philosopher="plato" data-ko="플라톤">
+              <img src="/images/plato pencil@2x.png" alt="플라톤" draggable="false" />
+            </div>
+
+            <div class="pencil-item" data-philosopher="aristoteles" data-ko="아리스토텔레스">
+              <img src="/images/aristoteles pencil@2x.png" alt="아리스토텔레스" draggable="false" />
+            </div>
+
+            <div class="pencil-item" data-philosopher="heraclitus" data-ko="헤라클리투스">
+              <img src="/images/heraclitus pencil@2x.png" alt="헤라클리투스" draggable="false" />
+            </div>
+
+            <div class="pencil-item" data-philosopher="socrates" data-ko="소크라테스">
+              <img src="/images/socarates pencil@2x.png" alt="소크라테스" draggable="false" />
             </div>
 
           </div>
