@@ -7,7 +7,8 @@ const state = {
   shareConsent: false,
   currentTab: 'ask',
   postsSortBy: 'latest',
-  isAdmin: false
+  isAdmin: false,
+  adminPassword: ''
 };
 
 const philosopherMeta = {
@@ -160,17 +161,28 @@ btnGlobalHome.addEventListener('click', () => {
   showStep('intro');
 });
 
-// 관리자 인증
+// 관리자 인증 (서버에서 검증 — 클라이언트에서 비밀번호 하드코딩 금지)
 if (btnAdminAuth) {
-  btnAdminAuth.addEventListener('click', () => {
+  btnAdminAuth.addEventListener('click', async () => {
     const pw = prompt('관리자 비밀번호를 입력하십시오:');
-    if (pw === 'lmnt3355') {
-      state.isAdmin = true;
-      alert('관리자 권한이 인증되었습니다.');
-      loadCommunityPosts();
-    } else if (pw !== null) {
+    if (!pw) return;
+
+    // 임시 포스트로 서버 검증 (DELETE 403이면 실패)
+    const testRes = await fetch('/api/posts/__auth_check__', {
+      method: 'DELETE',
+      headers: { 'x-admin-password': pw }
+    });
+
+    if (testRes.status === 403) {
       alert('비밀번호가 올바르지 않습니다.');
+      return;
     }
+
+    // 404(포스트 없음) or 200 → 인증 성공
+    state.isAdmin = true;
+    state.adminPassword = pw;
+    alert('관리자 권한이 인증되었습니다.');
+    loadCommunityPosts();
   });
 }
 
@@ -571,7 +583,8 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
     const tokens = parseAnswerTokens(data.answer);
     answerText.innerHTML = tokens
       .map((t, i) => {
-        const inner = t.bold ? `<strong>${t.word}</strong>` : t.word;
+        const safe = escapeHTML(t.word);
+        const inner = t.bold ? `<strong>${safe}</strong>` : safe;
         return `<span class="answer-word" style="animation-delay:${i * WORD_DELAY}ms">${inner}</span>`;
       })
       .join(' ');
@@ -749,7 +762,7 @@ async function handleLikeClick(btn, postId) {
 
 async function deletePost(postId, cardElement) {
   try {
-    const res  = await fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: { 'x-admin-password': 'lmnt3355' } });
+    const res  = await fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: { 'x-admin-password': state.adminPassword } });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || '삭제 처리 중 문제가 발생했습니다.');
 

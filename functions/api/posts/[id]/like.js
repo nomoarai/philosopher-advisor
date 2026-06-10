@@ -1,8 +1,16 @@
 export async function onRequestPost(context) {
-  const { params, env } = context;
+  const { params, request, env } = context;
   const { id } = params;
 
   try {
+    // IP 기반 중복 공감 방지
+    const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+    const likeKey = `like:${id}:${ip}`;
+    const alreadyLiked = await env.POSTS_KV.get(likeKey);
+    if (alreadyLiked) {
+      return Response.json({ error: '이미 공감한 게시글입니다.' }, { status: 409 });
+    }
+
     const postsRaw = await env.POSTS_KV.get('posts');
     const posts = postsRaw ? JSON.parse(postsRaw) : [];
 
@@ -12,7 +20,10 @@ export async function onRequestPost(context) {
     }
 
     post.likes += 1;
-    await env.POSTS_KV.put('posts', JSON.stringify(posts));
+    await Promise.all([
+      env.POSTS_KV.put('posts', JSON.stringify(posts)),
+      env.POSTS_KV.put(likeKey, '1', { expirationTtl: 86400 * 365 })
+    ]);
 
     return Response.json(post);
   } catch (error) {

@@ -8,9 +8,26 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Rate limiting (in-memory, per IP)
+const rateLimitMap = new Map();
+function checkRateLimit(ip, limit = 10, windowMs = 60000) {
+  const now = Date.now();
+  const timestamps = (rateLimitMap.get(ip) || []).filter(t => t > now - windowMs);
+  if (timestamps.length >= limit) return false;
+  timestamps.push(now);
+  rateLimitMap.set(ip, timestamps);
+  return true;
+}
+
 // 미들웨어
-app.use(cors());
-app.use(express.json());
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',');
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error('CORS policy violation'));
+  }
+}));
+app.use(express.json({ limit: '16kb' }));
 app.use(express.static('public'));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/videos', express.static(path.join(__dirname, 'videos')));
@@ -127,11 +144,20 @@ const PHILOSOPHER_PROMPTS = {
 // ─────────────────────────────────────────
 
 app.post('/api/ask', async (req, res) => {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress;
+  if (!checkRateLimit(ip, 10, 60000)) {
+    return res.status(429).json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' });
+  }
+
   const { question, philosopher, shareConsent } = req.body;
 
   // 유효성 검사
   if (!question || !philosopher) {
     return res.status(400).json({ error: '질문과 철학자를 선택해주세요.' });
+  }
+
+  if (typeof question !== 'string' || question.length > 500) {
+    return res.status(400).json({ error: '질문은 500자를 초과할 수 없습니다.' });
   }
 
   if (!PHILOSOPHER_PROMPTS[philosopher]) {
@@ -206,26 +232,36 @@ app.get('/api/posts', (req, res) => {
 });
 
 // 포스트 공감(좋아요) 추가 API
+const likedIpMap = new Map(); // postId → Set<ip>
+
 app.post('/api/posts/:id/like', (req, res) => {
   const { id } = req.params;
-  const post = posts.find(p => p.id === id);
+  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress;
 
+  const post = posts.find(p => p.id === id);
   if (!post) {
     return res.status(404).json({ error: '포스트를 찾을 수 없습니다.' });
   }
 
+  const likedIps = likedIpMap.get(id) || new Set();
+  if (likedIps.has(ip)) {
+    return res.status(409).json({ error: '이미 공감한 게시글입니다.' });
+  }
+  likedIps.add(ip);
+  likedIpMap.set(id, likedIps);
+
   post.likes += 1;
   savePosts();
-  
+
   res.json(post);
 });
 
-// 관리자 포스트 삭제 API (비밀번호: lmnt3355)
+// 관리자 포스트 삭제 API
 app.delete('/api/posts/:id', (req, res) => {
   const { id } = req.params;
   const adminPassword = req.headers['x-admin-password'];
 
-  if (adminPassword !== 'lmnt3355') {
+  if (!process.env.ADMIN_PASSWORD || adminPassword !== process.env.ADMIN_PASSWORD) {
     return res.status(403).json({ error: '관리자 권한이 없습니다.' });
   }
 

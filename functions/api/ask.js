@@ -62,10 +62,23 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
+    // Rate limiting (KV 기반, IP당 분당 10회)
+    const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+    const rateKey = `rate:${ip}:${Math.floor(Date.now() / 60000)}`;
+    const rateCount = parseInt(await env.POSTS_KV.get(rateKey) || '0');
+    if (rateCount >= 10) {
+      return Response.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+    }
+    await env.POSTS_KV.put(rateKey, String(rateCount + 1), { expirationTtl: 120 });
+
     const { question, philosopher, shareConsent } = await request.json();
 
     if (!question || !philosopher) {
       return Response.json({ error: '질문과 철학자를 선택해주세요.' }, { status: 400 });
+    }
+
+    if (typeof question !== 'string' || question.length > 500) {
+      return Response.json({ error: '질문은 500자를 초과할 수 없습니다.' }, { status: 400 });
     }
 
     if (!PHILOSOPHER_PROMPTS[philosopher]) {

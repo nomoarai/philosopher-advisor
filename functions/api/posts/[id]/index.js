@@ -3,7 +3,7 @@ export async function onRequestDelete(context) {
   const { id } = params;
 
   const adminPassword = request.headers.get('x-admin-password');
-  if (adminPassword !== 'lmnt3355') {
+  if (!env.ADMIN_PASSWORD || adminPassword !== env.ADMIN_PASSWORD) {
     return Response.json({ error: '관리자 권한이 없습니다.' }, { status: 403 });
   }
 
