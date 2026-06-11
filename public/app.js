@@ -106,12 +106,12 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
    버튼 연필 채움 인터랙션
    ───────────────────────────────────────── */
 const PENCIL = {
-  strokeWidth: 13,  // 펜 두께
-  spacing: 11,      // 획 간격 (2px 겹침)
+  strokeWidth: 5,   // 펜 두께 — 얇은 연필 선
+  spacing: 4,       // 획 간격 (1px 겹침, 촘촘하게)
   slant: 0.35,      // 기울기: dx = 높이 * slant
-  strokeDur: 60,    // 한 획 드로우 ms
-  maxTotal: 350,    // 전체 상한 ms
-  jitter: 2         // 끝점 손떨림 px
+  strokeDur: 50,    // 한 획 드로우 ms
+  maxTotal: 380,    // 전체 상한 ms
+  jitter: 1.5       // 끝점 손떨림 px
 };
 
 function pencilFill(btn) {
