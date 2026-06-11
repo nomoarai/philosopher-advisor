@@ -102,6 +102,92 @@ const transitionLoadingSentence = document.getElementById('transition-loading-se
 const PREFERS_REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+/* ─────────────────────────────────────────
+   버튼 연필 채움 인터랙션
+   ───────────────────────────────────────── */
+const PENCIL = {
+  strokeWidth: 13,  // 펜 두께
+  spacing: 11,      // 획 간격 (2px 겹침)
+  slant: 0.35,      // 기울기: dx = 높이 * slant
+  strokeDur: 60,    // 한 획 드로우 ms
+  maxTotal: 350,    // 전체 상한 ms
+  jitter: 2         // 끝점 손떨림 px
+};
+
+function pencilFill(btn) {
+  if (PREFERS_REDUCED) return Promise.resolve();
+  if (btn.dataset.filling === 'true') return Promise.reject(new Error('filling'));
+  btn.dataset.filling = 'true';
+  btn.classList.add('btn-pencil-filling');
+
+  const w  = btn.offsetWidth;
+  const h  = btn.offsetHeight;
+  const dx = h * PENCIL.slant;
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'pencil-fill-svg');
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+
+  // 사선 스트로크 생성 — 좌→우, 짝수획 ↓ / 홀수획 ↑ (지그재그 빗금)
+  const paths = [];
+  const jit = () => (Math.random() - 0.5) * PENCIL.jitter * 2;
+  let x = -dx;
+  let i = 0;
+  while (x < w + PENCIL.spacing) {
+    const topX = x + dx + jit();
+    const botX = x + jit();
+    const d = (i % 2 === 0)
+      ? `M ${topX} ${-4 + jit()} L ${botX} ${h + 4 + jit()}`
+      : `M ${botX} ${h + 4 + jit()} L ${topX} ${-4 + jit()}`;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('stroke-width', PENCIL.strokeWidth);
+    svg.appendChild(path);
+    paths.push(path);
+    x += PENCIL.spacing * (1 + (Math.random() - 0.5) * 0.16);
+    i++;
+  }
+
+  btn.appendChild(svg);
+
+  const n = paths.length;
+  const stagger = Math.min(16, (PENCIL.maxTotal - PENCIL.strokeDur) / n);
+  const total = stagger * (n - 1) + PENCIL.strokeDur;
+
+  paths.forEach((path, idx) => {
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    path.animate(
+      [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+      { duration: PENCIL.strokeDur, delay: idx * stagger, easing: 'cubic-bezier(0.3, 0, 0.4, 1)', fill: 'both' }
+    );
+  });
+
+  // 채움이 중앙을 지날 때 글자 흰색 반전
+  setTimeout(() => btn.classList.add('btn-pencil-filled'), total * 0.45);
+
+  return new Promise(resolve => setTimeout(resolve, total));
+}
+
+function pencilFillReset(btn) {
+  const svg = btn.querySelector('.pencil-fill-svg');
+  if (svg) svg.remove();
+  btn.classList.remove('btn-pencil-filling', 'btn-pencil-filled');
+  delete btn.dataset.filling;
+}
+
+// 클릭 → 연필 채움 → 액션 → 전환 후 리셋
+function pencilAction(btn, action) {
+  pencilFill(btn)
+    .then(() => {
+      action();
+      setTimeout(() => pencilFillReset(btn), 400);
+    })
+    .catch(() => {}); // 채움 진행 중 중복 클릭 무시
+}
+
 /* 한국어 주격조사 */
 function subjectParticle(name) {
   const code = name.charCodeAt(name.length - 1);
@@ -117,6 +203,12 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.LIKED_POSTS, JSON.stringify([]));
   }
   updateLockState();
+
+  // 연필 채움 대상 버튼 — 글자를 span으로 감싸 스트로크 위에 표시
+  ['btn-start-intro', 'btn-next-mood', 'btn-next-situation', 'btn-submit-answer', 'btn-restart'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.innerHTML = `<span class="btn-label">${b.innerHTML}</span>`;
+  });
 
   // 모든 옵션 카드에 손그림 체크 SVG 주입 (선택 시 스트로크 드로우)
   document.querySelectorAll('.option-card').forEach(card => {
@@ -298,7 +390,7 @@ function showStep(name) {
 // STEP 0: 인트로
 // ─────────────────────────────────────────
 if (btnStartIntro) {
-  btnStartIntro.addEventListener('click', () => showStep('mood'));
+  btnStartIntro.addEventListener('click', () => pencilAction(btnStartIntro, () => showStep('mood')));
 }
 
 // ─────────────────────────────────────────
@@ -313,7 +405,7 @@ document.querySelectorAll('#mood-options .option-card').forEach(card => {
   });
 });
 
-btnNextMood.addEventListener('click', () => showStep('situation'));
+btnNextMood.addEventListener('click', () => pencilAction(btnNextMood, () => showStep('situation')));
 btnBackMood.addEventListener('click', () => showStep('mood'));
 
 // ─────────────────────────────────────────
@@ -340,7 +432,7 @@ document.querySelectorAll('#step-situation .option-card').forEach(card => {
   });
 });
 
-btnNextSituation.addEventListener('click', () => showStep('mindset'));
+btnNextSituation.addEventListener('click', () => pencilAction(btnNextSituation, () => showStep('mindset')));
 btnBackSituation.addEventListener('click', () => showStep('situation'));
 
 // ─────────────────────────────────────────
@@ -423,7 +515,7 @@ if (shareConsentCheckbox) {
 btnSubmitAnswer.addEventListener('click', () => {
   state.userAnswer   = userAnswerInput ? userAnswerInput.value.trim() : '';
   state.shareConsent = shareConsentCheckbox ? shareConsentCheckbox.checked : false;
-  playTransitionIn();
+  pencilAction(btnSubmitAnswer, () => playTransitionIn());
 });
 
 // ─────────────────────────────────────────
@@ -637,8 +729,10 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
 // 답변 화면 액션
 // ─────────────────────────────────────────
 btnRestart.addEventListener('click', () => {
-  resetState();
-  showStep('mood');
+  pencilAction(btnRestart, () => {
+    resetState();
+    showStep('mood');
+  });
 });
 
 btnBackPhilosopher.addEventListener('click', () => {

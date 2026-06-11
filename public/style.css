@@ -384,7 +384,7 @@ textarea::placeholder {
   position: relative;
   padding: 15px 28px;
   background-color: transparent;
-  color: #ffffff;
+  color: var(--color-text-primary);
   border: none;
   border-radius: 4px 10px 5px 9px / 9px 5px 10px 4px;
   font-family: var(--font-sans);
@@ -400,7 +400,8 @@ textarea::placeholder {
   content: '';
   position: absolute;
   inset: 0;
-  background-color: var(--color-accent);
+  background-color: #ffffff;
+  border: 2px solid #111111;
   border-radius: inherit;
   filter: url(#sketchy);
   z-index: -1;
@@ -412,7 +413,7 @@ textarea::placeholder {
 }
 
 .btn-primary:hover:not(:disabled)::before {
-  background-color: var(--color-accent-hover);
+  background-color: #f5f5f5;
 }
 
 .btn-primary:active:not(:disabled) {
@@ -1752,7 +1753,7 @@ body:has(#step-intro.active) .btn-global-home {
   max-width: 280px;
   padding: 17px 32px;
   background-color: transparent;
-  color: #ffffff;
+  color: #111111;
   font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 700;
@@ -1769,8 +1770,8 @@ body:has(#step-intro.active) .btn-global-home {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: #000000;
-  border: 2px solid #000000;
+  background: #ffffff;
+  border: 2px solid #111111;
   border-radius: 4px 10px 5px 9px / 9px 5px 10px 4px;
   filter: url(#sketchy);
   transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -1778,8 +1779,7 @@ body:has(#step-intro.active) .btn-global-home {
 }
 
 .intro-cta-btn:hover::before {
-  background: #333333;
-  border-color: #333333;
+  background: #f5f5f5;
 }
 
 .intro-cta-btn:active {
@@ -2411,4 +2411,37 @@ body:has(#step-intro.active) .btn-global-home {
   .q-word {
     opacity: 1 !important;
   }
+}
+
+/* ─────────────────────────────────────────
+   v2 폴리시 — 버튼 연필 채움 인터랙션
+   ───────────────────────────────────────── */
+.btn-label {
+  position: relative;
+  z-index: 2;
+  transition: color 0.15s ease;
+}
+
+.btn-pencil-filling {
+  pointer-events: none;
+}
+
+.btn-pencil-filled .btn-label {
+  color: #ffffff;
+}
+
+.pencil-fill-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  clip-path: inset(0 round 4px 10px 5px 9px);
+  pointer-events: none;
+}
+
+.pencil-fill-svg path {
+  fill: none;
+  stroke: #111111;
+  stroke-linecap: round;
 }
