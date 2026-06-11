@@ -106,8 +106,8 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
    버튼 연필 채움 인터랙션
    ───────────────────────────────────────── */
 const PENCIL = {
-  strokeWidth: 1.1, // 연필 선 굵기
-  spacing: 1.5,     // 획 간격 — 빽빽하게
+  strokeWidth: 1.5, // 연필 선 굵기
+  spacing: 1.2,     // 획 간격 — 빽빽하게
   slant: 0.35,
   strokeDur: 50,
   maxTotal: 380,
@@ -164,7 +164,7 @@ function pencilFill(btn) {
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', d);
       path.setAttribute('stroke-width', PENCIL.strokeWidth);
-      path.style.strokeOpacity = layer === 0 ? (0.55 + Math.random() * 0.35) : (0.2 + Math.random() * 0.25);
+      path.style.strokeOpacity = layer === 0 ? (0.85 + Math.random() * 0.15) : (0.45 + Math.random() * 0.3);
       svg.appendChild(path);
       paths.push({ path, strokeIdx: i });
     });
