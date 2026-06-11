@@ -71,14 +71,18 @@ export async function onRequestPost(context) {
     }
     await env.POSTS_KV.put(rateKey, String(rateCount + 1), { expirationTtl: 120 });
 
-    const { question, philosopher, shareConsent } = await request.json();
+    const { mood, theme, situation, mindset, philosopher, generatedQuestion, userAnswer, shareConsent } = await request.json();
 
-    if (!question || !philosopher) {
-      return Response.json({ error: '질문과 철학자를 선택해주세요.' }, { status: 400 });
+    if (!philosopher || !generatedQuestion) {
+      return Response.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
     }
 
-    if (typeof question !== 'string' || question.length > 500) {
-      return Response.json({ error: '질문은 500자를 초과할 수 없습니다.' }, { status: 400 });
+    if (typeof generatedQuestion !== 'string' || generatedQuestion.length > 200) {
+      return Response.json({ error: '질문이 너무 깁니다.' }, { status: 400 });
+    }
+
+    if (userAnswer !== undefined && (typeof userAnswer !== 'string' || userAnswer.length > 200)) {
+      return Response.json({ error: '답변이 너무 깁니다.' }, { status: 400 });
     }
 
     if (!PHILOSOPHER_PROMPTS[philosopher]) {
@@ -86,7 +90,8 @@ export async function onRequestPost(context) {
     }
 
     // KV 캐시 확인
-    const cacheKey = `cache:${philosopher}:${normalizeStr(question)}`;
+    const questionKey = `${generatedQuestion}:${userAnswer || ''}`;
+    const cacheKey = `v2cache:${philosopher}:${normalizeStr(questionKey)}`;
     let answer = await env.POSTS_KV.get(cacheKey);
 
     if (!answer) {
@@ -94,7 +99,25 @@ export async function onRequestPost(context) {
         return Response.json({ error: 'Gemini API Key가 설정되지 않았습니다.' }, { status: 500 });
       }
 
-      const userPrompt = `다음은 고민 상담 내용입니다:\n\n"${question}"\n\n이 고민에 대해 당신의 철학적 관점으로 조언해주세요.\n\n[답변 형식 지침]:\n- 절대 이모티콘이나 이모지를 쓰지 마세요.\n- 답변에서 가장 핵심이 되는 조언 구절 1~2개에만 **볼드체**를 사용하세요. 이탤릭체나 다른 마크다운은 쓰지 마세요.\n- 현자가 타이르듯 구어체(~라네, ~일세, ~한다네)로 친근하게 답변하세요.`;
+      const contextParts = [
+        mood      && `오늘 기분: ${mood}`,
+        theme     && `고민 영역: ${theme}`,
+        situation && `요즘 상황: ${situation}`,
+        mindset   && `상황을 바라보는 생각: ${mindset}`,
+      ].filter(Boolean);
+
+      const userPrompt = `다음은 한 사람의 지금 상태입니다:
+${contextParts.join('\n')}
+
+당신이 이 사람에게 던진 질문: "${generatedQuestion}"
+${userAnswer ? `이 사람의 답변: "${userAnswer}"` : '이 사람은 답변을 남기지 않았습니다.'}
+
+이 사람의 상황을 충분히 이해한 뒤, 당신의 철학적 관점으로 진심 어린 조언을 건네주세요.
+
+[답변 형식 지침]:
+- 절대 이모티콘이나 이모지를 쓰지 마세요.
+- 답변에서 가장 핵심이 되는 조언 구절 1~2개에만 **볼드체**를 사용하세요. 이탤릭체나 다른 마크다운은 쓰지 마세요.
+- 현자가 타이르듯 구어체(~라네, ~일세, ~한다네)로 친근하게 답변하세요.`;
 
       const geminiRes = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
@@ -121,24 +144,23 @@ export async function onRequestPost(context) {
         return Response.json({ error: 'AI 응답을 받지 못했습니다.' }, { status: 500 });
       }
 
-      // KV 캐시 저장 (30일)
       await env.POSTS_KV.put(cacheKey, answer, { expirationTtl: 86400 * 30 });
     }
 
-    // shareConsent가 true인 경우 KV에 포스트 저장
     if (shareConsent === true) {
+      const communityQuestion = generatedQuestion + (userAnswer ? `\n\n→ ${userAnswer}` : '');
       const postsRaw = await env.POSTS_KV.get('posts');
       const posts = postsRaw ? JSON.parse(postsRaw) : [];
 
       const isAlreadyShared = posts.some(
-        p => p.philosopher === philosopher && normalizeStr(p.question) === normalizeStr(question)
+        p => p.philosopher === philosopher && normalizeStr(p.question) === normalizeStr(communityQuestion)
       );
 
       if (!isAlreadyShared) {
         const newPost = {
           id: Date.now().toString(36) + Math.random().toString(36).substring(2, 7),
           philosopher,
-          question,
+          question: communityQuestion,
           answer,
           likes: 0,
           createdAt: new Date().toISOString()

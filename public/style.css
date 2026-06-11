@@ -1927,3 +1927,226 @@ body:has(#step-intro.active) .btn-global-home {
     transform: scale(1);
   }
 }
+
+/* ─────────────────────────────────────────
+   v2 — 스텝 레이블 & 프로그레스 바
+   ───────────────────────────────────────── */
+.step-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.step-progress {
+  height: 3px;
+  background: #e8e8e8;
+  border-radius: 2px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+.step-progress-bar {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* ─────────────────────────────────────────
+   v2 — 선택 카드 (option-card)
+   ───────────────────────────────────────── */
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 24px;
+}
+
+.option-card {
+  width: 100%;
+  text-align: left;
+  padding: 16px 20px;
+  background: var(--color-surface-card);
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+  position: relative;
+  line-height: 1.5;
+}
+
+.option-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid #dddddd;
+  border-radius: var(--radius);
+  filter: url(#sketchy);
+  pointer-events: none;
+  transition: border-color var(--transition);
+}
+
+.option-card:hover {
+  background: var(--color-card-hover);
+}
+
+.option-card:hover::before {
+  border-color: #aaaaaa;
+}
+
+.option-card.selected {
+  background: var(--color-surface-dark);
+  color: #ffffff;
+}
+
+.option-card.selected::before {
+  border-color: var(--color-surface-dark);
+}
+
+/* mindset 카드 — 따옴표 스타일 */
+.mindset-card {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.55;
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.mindset-card.selected {
+  color: #ffffff;
+  font-style: italic;
+}
+
+/* ─────────────────────────────────────────
+   v2 — 상황 탭 (situation-tabs)
+   ───────────────────────────────────────── */
+.situation-tabs {
+  display: flex;
+  gap: 0;
+  margin: 16px 0 0;
+  position: relative;
+}
+
+.situation-tabs::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-bottom: 2px solid #111111;
+  filter: url(#sketchy);
+}
+
+.situation-tab {
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px 22px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition);
+  position: relative;
+  z-index: 1;
+}
+
+.situation-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.situation-tab.active {
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.situation-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-accent);
+  z-index: 2;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ─────────────────────────────────────────
+   v2 — AI 질문 카드 (STEP 4)
+   ───────────────────────────────────────── */
+.ai-question-card {
+  padding: 32px 24px;
+  background: var(--color-surface-dark);
+  border-radius: var(--radius-lg);
+  margin-bottom: 28px;
+  text-align: center;
+  animation: slideUp 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.ai-question-label {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+.ai-question-text {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: #ffffff;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+/* ─────────────────────────────────────────
+   v2 — 짧은 답변 입력 (STEP 4)
+   ───────────────────────────────────────── */
+.short-answer-input {
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--color-surface);
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--color-text-primary);
+  line-height: 1.65;
+  resize: none;
+  outline: none;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.short-answer-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* 스케치 테두리 효과 — wrapper 없이 box-shadow로 처리 */
+.short-answer-input:focus {
+  box-shadow: 0 0 0 2px #111111;
+}
+
+.answer-char-count {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-align: right;
+  margin-bottom: 20px;
+}
