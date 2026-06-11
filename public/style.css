@@ -180,7 +180,6 @@ body:has(#step-intro.active) {
   left: 0;
   right: 0;
   border-bottom: 2px solid #111111;
-  filter: url(#sketchy);
 }
 
 .question-step-label {
@@ -306,7 +305,6 @@ textarea::placeholder {
   inset: 0;
   border: 2px solid #333333;
   border-radius: 2px;
-  filter: url(#sketchy);
   pointer-events: none;
   transition: border-color var(--transition);
 }
@@ -363,41 +361,6 @@ textarea::placeholder {
    스케치 손그림 연필선 효과
    ───────────────────────────────────────── */
 
-/* 버튼 테두리 wobbly 애니메이션 — 범위 확대 */
-@keyframes sketch-morph {
-  0% {
-    border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
-  }
-
-  14% {
-    border-radius: 3px 1px 4px 1px / 1px 4px 1px 3px;
-  }
-
-  28% {
-    border-radius: 4px 1px 1px 3px / 1px 2px 4px 1px;
-  }
-
-  42% {
-    border-radius: 1px 4px 2px 1px / 4px 1px 1px 4px;
-  }
-
-  57% {
-    border-radius: 2px 2px 1px 4px / 2px 1px 4px 1px;
-  }
-
-  71% {
-    border-radius: 1px 4px 4px 1px / 4px 2px 1px 3px;
-  }
-
-  85% {
-    border-radius: 4px 1px 3px 2px / 1px 4px 2px 1px;
-  }
-
-  100% {
-    border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
-  }
-}
-
 /* 버튼 테두리에 스케치 필터 — 가상 요소로 테두리만 분리 적용 */
 .btn-secondary {
   position: relative;
@@ -423,14 +386,13 @@ textarea::placeholder {
   background-color: transparent;
   color: #ffffff;
   border: none;
-  border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
+  border-radius: 4px 10px 5px 9px / 9px 5px 10px 4px;
   font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: transform var(--transition), opacity var(--transition);
   align-self: flex-start;
-  animation: sketch-morph 6s ease-in-out infinite;
   isolation: isolate;
 }
 
@@ -460,7 +422,6 @@ textarea::placeholder {
 .btn-primary:disabled {
   opacity: 0.3;
   cursor: not-allowed;
-  animation: none;
 }
 
 .btn-secondary {
@@ -468,14 +429,12 @@ textarea::placeholder {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
   border: none;
-  border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
+  border-radius: 4px 10px 5px 9px / 9px 5px 10px 4px;
   font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: background-color var(--transition), border-color var(--transition), color var(--transition);
-  animation: sketch-morph 7s ease-in-out infinite;
-  animation-delay: -2s;
 }
 
 .btn-secondary:hover {
@@ -820,7 +779,6 @@ textarea::placeholder {
   left: 0;
   right: 0;
   border-bottom: 2px solid #111111;
-  filter: url(#sketchy);
 }
 
 .answer-text {
@@ -1042,7 +1000,6 @@ textarea::placeholder {
   left: 0;
   right: 0;
   border-bottom: 2px solid #111111;
-  filter: url(#sketchy);
 }
 
 .filter-buttons {
@@ -1118,7 +1075,6 @@ textarea::placeholder {
   left: 0;
   right: 0;
   border-bottom: 2px solid #111111;
-  filter: url(#sketchy);
 }
 
 .post-philosopher-avatar {
@@ -1231,7 +1187,6 @@ textarea::placeholder {
   left: 0;
   right: 0;
   border-top: 2px dashed #333333;
-  filter: url(#sketchy);
 }
 
 .post-footer {
@@ -1249,7 +1204,6 @@ textarea::placeholder {
   left: 0;
   right: 0;
   border-top: 2px solid #111111;
-  filter: url(#sketchy);
 }
 
 /* 공감 하트 버튼 및 마이크로 인터랙션 */
@@ -1327,7 +1281,6 @@ textarea::placeholder {
   left: 0;
   right: 0;
   border-top: 2px solid #444444;
-  filter: url(#sketchy);
   pointer-events: none;
 }
 
@@ -1404,7 +1357,6 @@ textarea::placeholder {
   left: 0;
   right: 0;
   border-bottom: 2px solid #111111;
-  filter: url(#sketchy);
   pointer-events: none;
 }
 
@@ -1819,7 +1771,7 @@ body:has(#step-intro.active) .btn-global-home {
   z-index: -1;
   background: #000000;
   border: 2px solid #000000;
-  border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
+  border-radius: 4px 10px 5px 9px / 9px 5px 10px 4px;
   filter: url(#sketchy);
   transition: background-color 0.2s ease, border-color 0.2s ease;
   animation: ctaPulse 3s ease-in-out infinite alternate;
@@ -2139,7 +2091,6 @@ body:has(#step-intro.active) .btn-global-home {
   left: 0;
   right: 0;
   border-bottom: 2px solid #111111;
-  filter: url(#sketchy);
 }
 
 .situation-tab {
@@ -2440,7 +2391,6 @@ body:has(#step-intro.active) .btn-global-home {
   right: 0;
   bottom: -6px;
   border-bottom: 2px solid #ffffff;
-  filter: url(#sketchy);
   transform-origin: left;
   animation: inkUnderline 0.25s cubic-bezier(0.65, 0, 0.35, 1);
 }
