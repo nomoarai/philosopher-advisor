@@ -106,12 +106,12 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
    버튼 연필 채움 인터랙션
    ───────────────────────────────────────── */
 const PENCIL = {
-  strokeWidth: 5,   // 펜 두께 — 얇은 연필 선
-  spacing: 4,       // 획 간격 (1px 겹침, 촘촘하게)
-  slant: 0.35,      // 기울기: dx = 높이 * slant
-  strokeDur: 50,    // 한 획 드로우 ms
-  maxTotal: 380,    // 전체 상한 ms
-  jitter: 1.5       // 끝점 손떨림 px
+  strokeWidth: 1.2, // 연필 선 굵기
+  spacing: 3,       // 획 간격
+  slant: 0.35,
+  strokeDur: 50,
+  maxTotal: 380,
+  jitter: 1.2
 };
 
 function pencilFill(btn) {
@@ -123,45 +123,64 @@ function pencilFill(btn) {
   const w  = btn.offsetWidth;
   const h  = btn.offsetHeight;
   const dx = h * PENCIL.slant;
+  const seed = Math.floor(Math.random() * 999);
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'pencil-fill-svg');
   svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
   svg.setAttribute('preserveAspectRatio', 'none');
 
-  // 사선 스트로크 생성 — 좌→우, 짝수획 ↓ / 홀수획 ↑ (지그재그 빗금)
+  // 연필 질감 필터 — turbulence displacement로 선을 불규칙하게 흔들어 흑연 느낌
+  const filtId = `pf-${seed}`;
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  defs.innerHTML = `
+    <filter id="${filtId}" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03 0.7" numOctaves="3" seed="${seed}" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>`;
+  svg.appendChild(defs);
+
+  // 각 획을 2개의 가닥으로 — 0.8px 오프셋, opacity 차이로 흑연 레이어 표현
   const paths = [];
   const jit = () => (Math.random() - 0.5) * PENCIL.jitter * 2;
   let x = -dx;
   let i = 0;
   while (x < w + PENCIL.spacing) {
-    const topX = x + dx + jit();
-    const botX = x + jit();
-    const d = (i % 2 === 0)
-      ? `M ${topX} ${-4 + jit()} L ${botX} ${h + 4 + jit()}`
-      : `M ${botX} ${h + 4 + jit()} L ${topX} ${-4 + jit()}`;
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', d);
-    path.setAttribute('stroke-width', PENCIL.strokeWidth);
-    svg.appendChild(path);
-    paths.push(path);
+    [0, 0.8].forEach((offset, layer) => {
+      const topX = x + dx + jit() + offset;
+      const botX = x + jit() + offset;
+      const d = (i % 2 === 0)
+        ? `M ${topX} ${-4 + jit()} L ${botX} ${h + 4 + jit()}`
+        : `M ${botX} ${h + 4 + jit()} L ${topX} ${-4 + jit()}`;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('stroke-width', PENCIL.strokeWidth);
+      path.setAttribute('filter', `url(#${filtId})`);
+      path.style.strokeOpacity = layer === 0 ? (0.55 + Math.random() * 0.35) : (0.2 + Math.random() * 0.25);
+      svg.appendChild(path);
+      paths.push({ path, strokeIdx: i });
+    });
     x += PENCIL.spacing * (1 + (Math.random() - 0.5) * 0.16);
     i++;
   }
 
   btn.appendChild(svg);
 
-  const n = paths.length;
-  const stagger = Math.min(16, (PENCIL.maxTotal - PENCIL.strokeDur) / n);
-  const total = stagger * (n - 1) + PENCIL.strokeDur;
+  // 획 수는 strokeIdx 기준 (2 가닥 × N획이므로 고유 획 인덱스로 타이밍 계산)
+  const strokeCount = i; // while 루프에서 증가된 i = 총 획 수
+  const totalSpread = Math.min((strokeCount - 1) * 16, PENCIL.maxTotal - PENCIL.strokeDur);
+  const total = totalSpread + PENCIL.strokeDur;
 
-  paths.forEach((path, idx) => {
+  paths.forEach(({ path, strokeIdx }) => {
     const len = path.getTotalLength();
     path.style.strokeDasharray = len;
     path.style.strokeDashoffset = len;
+    // ease-out stagger: t^2 커브로 초반 빠르게 쏟아지고 후반 여유롭게 마무리
+    const t = strokeCount > 1 ? strokeIdx / (strokeCount - 1) : 0;
+    const animDelay = Math.pow(t, 2) * totalSpread;
     path.animate(
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-      { duration: PENCIL.strokeDur, delay: idx * stagger, easing: 'cubic-bezier(0.3, 0, 0.4, 1)', fill: 'both' }
+      { duration: PENCIL.strokeDur, delay: animDelay, easing: 'cubic-bezier(0, 0, 0.3, 1)', fill: 'both' }
     );
   });
 
