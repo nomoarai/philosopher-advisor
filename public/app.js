@@ -107,7 +107,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
    ───────────────────────────────────────── */
 const PENCIL = {
   strokeWidth: 1.1, // 연필 선 굵기
-  spacing: 2.4,     // 획 간격 — 촘촘하게
+  spacing: 1.5,     // 획 간격 — 빽빽하게
   slant: 0.35,
   strokeDur: 50,
   maxTotal: 380,
