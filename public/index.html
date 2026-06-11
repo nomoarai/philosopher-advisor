@@ -154,10 +154,13 @@
       <section id="step-ai-question" class="step">
         <div class="container">
           <button id="btn-back-mindset" class="btn-back">← 이전</button>
-          <!-- 로딩 상태 -->
-          <div id="ai-question-loading" class="answer-loading">
-            <div class="loading-dots"><span></span><span></span><span></span></div>
-            <p>마지막 질문을 생성중이에요.</p>
+          <!-- 로딩 상태 — 연필 선 스켈레톤 -->
+          <div id="ai-question-loading" class="ai-question-skeleton">
+            <p class="ai-question-label">오늘의 철학자가 묻습니다</p>
+            <div class="pencil-line" style="width: 88%"></div>
+            <div class="pencil-line" style="width: 72%"></div>
+            <div class="pencil-line" style="width: 55%"></div>
+            <p class="skeleton-caption">마지막 질문을 생성중이에요.</p>
           </div>
           <!-- 질문 카드 (로딩 완료 후) -->
           <div id="ai-question-content" class="hidden">

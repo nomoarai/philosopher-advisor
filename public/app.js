@@ -98,6 +98,10 @@ const transitionVideoOut        = document.getElementById('transition-video-out'
 const transitionLoading         = document.getElementById('transition-loading');
 const transitionLoadingSentence = document.getElementById('transition-loading-sentence');
 
+/* 모션 환경설정 */
+const PREFERS_REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
 /* 한국어 주격조사 */
 function subjectParticle(name) {
   const code = name.charCodeAt(name.length - 1);
@@ -113,6 +117,16 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.LIKED_POSTS, JSON.stringify([]));
   }
   updateLockState();
+
+  // 모든 옵션 카드에 손그림 체크 SVG 주입 (선택 시 스트로크 드로우)
+  document.querySelectorAll('.option-card').forEach(card => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'card-check');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.innerHTML = '<path d="M4 13 L10 19 L20 5" pathLength="1"/>';
+    card.appendChild(svg);
+  });
 });
 
 // ─────────────────────────────────────────
@@ -209,22 +223,75 @@ if (btnAdminAuth) {
 // ─────────────────────────────────────────
 // 스텝 전환
 // ─────────────────────────────────────────
-function showStep(name) {
-  Object.values(steps).forEach(el => el.classList.remove('active'));
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
+const STEP_ORDER    = { intro: 0, mood: 1, situation: 2, mindset: 3, aiQuestion: 4, answer: 5 };
+const STEP_PROGRESS = { mood: { from: 0, to: 33 }, situation: { from: 33, to: 66 }, mindset: { from: 66, to: 100 } };
+let currentStepName    = 'intro';
+let stepTransitioning  = false;
 
-  if (name === 'intro') {
-    document.body.style.overflow = 'hidden';
-    document.body.style.height   = '100vh';
-  } else {
-    document.body.style.overflow = '';
-    document.body.style.height   = '';
+function animateProgress(name) {
+  const prog = STEP_PROGRESS[name];
+  if (!prog) return;
+  const bar = steps[name].querySelector('.step-progress-bar');
+  if (!bar) return;
+
+  if (PREFERS_REDUCED) {
+    bar.style.width = prog.to + '%';
+    return;
+  }
+  bar.style.transition = 'none';
+  bar.style.width = prog.from + '%';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    bar.style.transition = '';
+    bar.style.width = prog.to + '%';
+  }));
+}
+
+function showStep(name) {
+  if (stepTransitioning) return;
+
+  const prev = currentStepName;
+  const prevEl = steps[prev];
+
+  const finishEnter = (enterClass) => {
+    Object.values(steps).forEach(el =>
+      el.classList.remove('active', 'leaving-fwd', 'leaving-back', 'enter-fwd', 'enter-back'));
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
+    if (name === 'intro') {
+      document.body.style.overflow = 'hidden';
+      document.body.style.height   = '100vh';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.height   = '';
+    }
+
+    steps[name].classList.add('active');
+    if (enterClass) steps[name].classList.add(enterClass);
+
+    if (name !== 'answer') resetPillarParallax();
+    animateProgress(name);
+  };
+
+  currentStepName = name;
+
+  // 인트로 진출입, 답변 화면(비디오 트랜지션이 덮음), 동일 스텝 재진입은 퇴장 생략
+  const skipExit = PREFERS_REDUCED || prev === name || prev === 'intro' || name === 'intro' ||
+                   name === 'answer' || !prevEl || !prevEl.classList.contains('active');
+
+  if (skipExit) {
+    finishEnter(name === 'answer' || name === 'intro' ? null : 'enter-fwd');
+    return;
   }
 
-  steps[name].classList.add('active');
+  const fwd = (STEP_ORDER[name] ?? 0) > (STEP_ORDER[prev] ?? 0);
+  stepTransitioning = true;
+  prevEl.classList.add(fwd ? 'leaving-fwd' : 'leaving-back');
 
-  if (name !== 'answer') resetPillarParallax();
+  setTimeout(() => {
+    stepTransitioning = false;
+    finishEnter(fwd ? 'enter-fwd' : 'enter-back');
+  }, 220);
 }
 
 // ─────────────────────────────────────────
@@ -292,8 +359,11 @@ document.querySelectorAll('#mindset-options .option-card').forEach(card => {
     aiQuestionContent.classList.add('hidden');
     showStep('aiQuestion');
 
+    // 로더 깜빡임 방지 — 최소 노출 시간 보장
+    const minWait = PREFERS_REDUCED ? Promise.resolve() : delay(700);
+
     try {
-      const res = await fetch('/api/generate-question', {
+      const fetchPromise = fetch('/api/generate-question', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -303,21 +373,30 @@ document.querySelectorAll('#mindset-options .option-card').forEach(card => {
           mindset:   state.mindset
         })
       });
+      const [res] = await Promise.all([fetchPromise, minWait]);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '질문 생성 실패');
 
-      state.generatedQuestion  = data.question;
-      aiQuestionText.textContent = data.question;
+      revealAiQuestion(data.question);
     } catch (err) {
-      // 폴백 질문
-      state.generatedQuestion  = '지금 이 순간, 가장 솔직하게 느끼는 감정은 무엇인가요?';
-      aiQuestionText.textContent = state.generatedQuestion;
+      await minWait;
+      revealAiQuestion('지금 이 순간, 가장 솔직하게 느끼는 감정은 무엇인가요?');
     }
-
-    aiQuestionLoading.classList.add('hidden');
-    aiQuestionContent.classList.remove('hidden');
   });
 });
+
+// 질문을 단어 단위 "잉크 번짐"으로 공개
+function revealAiQuestion(question) {
+  state.generatedQuestion = question;
+  aiQuestionText.innerHTML = question
+    .split(' ')
+    .filter(w => w)
+    .map((w, i) => `<span class="q-word" style="animation-delay:${300 + i * 90}ms">${escapeHTML(w)}</span>`)
+    .join(' ');
+
+  aiQuestionLoading.classList.add('hidden');
+  aiQuestionContent.classList.remove('hidden');
+}
 
 btnBackMindset.addEventListener('click', () => {
   state.generatedQuestion = null;
@@ -466,7 +545,9 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
   recapQuestion.textContent = recapText;
 
   const headerWrapper = document.querySelector('.answer-header-wrapper');
+  const recapBox      = document.querySelector('.question-recap');
   headerWrapper.classList.remove('anim-in');
+  recapBox.classList.remove('anim-in');
   void headerWrapper.offsetWidth;
 
   answerLoading.classList.add('hidden');
@@ -479,7 +560,10 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
 
   showStep('answer');
 
-  requestAnimationFrame(() => { headerWrapper.classList.add('anim-in'); });
+  requestAnimationFrame(() => {
+    headerWrapper.classList.add('anim-in');
+    recapBox.classList.add('anim-in');
+  });
 
   if (!ok) {
     errorMessage.textContent = data.error || '오류가 발생했습니다.';

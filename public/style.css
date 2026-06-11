@@ -99,11 +99,46 @@ body:has(#step-intro.active) {
 
 .step {
   display: none;
-  animation: slideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .step.active {
   display: block;
+  animation: slideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 방향성 전환 — 다음(fwd)은 왼쪽으로 퇴장/오른쪽에서 입장, 이전(back)은 반대 */
+.step.leaving-fwd {
+  display: block;
+  animation: stepExitFwd 0.22s ease-in forwards;
+}
+
+.step.leaving-back {
+  display: block;
+  animation: stepExitBack 0.22s ease-in forwards;
+}
+
+.step.active.enter-fwd {
+  animation: stepEnterFwd 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.step.active.enter-back {
+  animation: stepEnterBack 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes stepExitFwd {
+  to { opacity: 0; transform: translateX(-24px); }
+}
+
+@keyframes stepExitBack {
+  to { opacity: 0; transform: translateX(24px); }
+}
+
+@keyframes stepEnterFwd {
+  from { opacity: 0; transform: translateX(28px); }
+}
+
+@keyframes stepEnterBack {
+  from { opacity: 0; transform: translateX(-28px); }
 }
 
 /* 인트로 활성화 중 → body 스크롤 차단 및 하단 padding 0 */
@@ -459,15 +494,20 @@ textarea::placeholder {
   font-family: var(--font-sans);
   font-size: 14px;
   cursor: pointer;
-  padding: 0;
-  margin-bottom: 24px;
-  transition: color var(--transition);
+  padding: 8px 4px;
+  margin-bottom: 16px;
+  transition: color var(--transition), transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   display: inline-flex;
   align-items: center;
 }
 
 .btn-back:hover {
   color: var(--color-accent);
+  transform: translateX(-2px);
+}
+
+.btn-back:active {
+  opacity: 0.6;
 }
 
 /* ─────────────────────────────────────────
@@ -676,6 +716,18 @@ textarea::placeholder {
   pointer-events: none;
 }
 
+.question-recap::after {
+  content: '\201C';
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  font-family: var(--font-serif);
+  font-size: 40px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
 .recap-label {
   font-size: 11px;
   letter-spacing: 0.15em;
@@ -863,6 +915,31 @@ textarea::placeholder {
 /* 액션 버튼 페이드인 */
 .answer-actions.anim-in {
   animation: answerFadeIn 0.4s ease forwards;
+}
+
+/* 리캡 박스 — 헤더에 이어 등장 */
+.question-recap.anim-in {
+  animation: answerSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+/* 아바타 — 미세하게 가라앉는 입장 */
+.answer-header-wrapper.anim-in .answer-philosopher-avatar img {
+  animation: avatarSettle 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes avatarSettle {
+  from { transform: scale(1.02); }
+  to   { transform: scale(1); }
+}
+
+/* 그리스어 독트린 — 자간 수축 페이드 (고전적 터치) */
+.answer-header-wrapper.anim-in .doctrine-greek {
+  animation: doctrineIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
+
+@keyframes doctrineIn {
+  from { opacity: 0; letter-spacing: 0.12em; }
+  to   { opacity: 1; letter-spacing: 0.03em; }
 }
 
 /* ─────────────────────────────────────────
@@ -1714,7 +1791,7 @@ body:has(#step-intro.active) .btn-global-home {
   margin: 0;
 }
 
-/* CTA 버튼 — 레퍼런스처럼 완전한 사각형 */
+/* CTA 버튼 — 스케치 디자인 시스템 통합 */
 .intro-cta-btn {
   display: inline-flex;
   align-items: center;
@@ -1722,25 +1799,43 @@ body:has(#step-intro.active) .btn-global-home {
   width: 100%;
   max-width: 280px;
   padding: 17px 32px;
-  background-color: #000000;
+  background-color: transparent;
   color: #ffffff;
   font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.03em;
   border: none;
-  border-radius: 0;
+  border-radius: 2px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  position: relative;
+  isolation: isolate;
 }
 
-.intro-cta-btn:hover {
-  background-color: #333333;
-  transform: translateY(-1px);
+.intro-cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #000000;
+  border: 2px solid #000000;
+  border-radius: 1px 3px 1px 3px / 3px 1px 3px 1px;
+  filter: url(#sketchy);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  animation: ctaPulse 3s ease-in-out infinite alternate;
+}
+
+.intro-cta-btn:hover::before {
+  background: #333333;
+  border-color: #333333;
 }
 
 .intro-cta-btn:active {
-  transform: translateY(1px);
+  opacity: 0.85;
+}
+
+@keyframes ctaPulse {
+  to { transform: scale(1.015); }
 }
 
 /* 반응형 */
@@ -1968,7 +2063,7 @@ body:has(#step-intro.active) .btn-global-home {
 .option-card {
   width: 100%;
   text-align: left;
-  padding: 16px 20px;
+  padding: 16px 48px 16px 20px;
   background: var(--color-surface-card);
   border: none;
   border-radius: var(--radius);
@@ -1976,9 +2071,13 @@ body:has(#step-intro.active) .btn-global-home {
   font-size: 15px;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: background-color var(--transition), color var(--transition);
+  transition: background-color var(--transition), color var(--transition), transform 0.15s ease;
   position: relative;
   line-height: 1.5;
+}
+
+.option-card:active {
+  transform: scale(0.985);
 }
 
 .option-card::before {
@@ -2076,6 +2175,16 @@ body:has(#step-intro.active) .btn-global-home {
   height: 2px;
   background: var(--color-accent);
   z-index: 2;
+  transform-origin: left;
+  animation: inkUnderline 0.25s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes inkUnderline {
+  from { transform: scaleX(0); }
+}
+
+.situation-tab:active {
+  opacity: 0.7;
 }
 
 .tab-panel {
@@ -2084,6 +2193,11 @@ body:has(#step-intro.active) .btn-global-home {
 
 .tab-panel.active {
   display: block;
+  animation: panelIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(6px); }
 }
 
 /* ─────────────────────────────────────────
@@ -2149,4 +2263,202 @@ body:has(#step-intro.active) .btn-global-home {
   color: var(--color-text-muted);
   text-align: right;
   margin-bottom: 20px;
+}
+/* ─────────────────────────────────────────
+   v2 폴리시 — 카드 체크 드로우 & 캐스케이드
+   ───────────────────────────────────────── */
+.card-check {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.card-check path {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.option-card.selected .card-check path {
+  animation: checkDraw 0.3s 0.08s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes checkDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes cardPulse {
+  50% { transform: scale(0.975); }
+}
+
+/* 캐스케이드 입장 — 스텝/탭 패널 활성화 시 카드 순차 등장 */
+.step.active .option-card {
+  animation: cardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.step.active .option-card:nth-child(1) { animation-delay: 0.05s; }
+.step.active .option-card:nth-child(2) { animation-delay: 0.10s; }
+.step.active .option-card:nth-child(3) { animation-delay: 0.14s; }
+.step.active .option-card:nth-child(4) { animation-delay: 0.18s; }
+.step.active .option-card:nth-child(5) { animation-delay: 0.23s; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+}
+
+/* 선택 펄스 — 캐스케이드보다 높은 특이도로 우선 적용 */
+.step.active .option-card.selected {
+  animation: cardPulse 0.22s ease-out;
+}
+
+/* ─────────────────────────────────────────
+   v2 폴리시 — STEP 4 연필 선 스켈레톤
+   ───────────────────────────────────────── */
+.ai-question-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  background: var(--color-surface-dark);
+  border-radius: var(--radius-lg);
+  margin-bottom: 28px;
+  text-align: center;
+  animation: slideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.ai-question-skeleton .pencil-line {
+  height: 13px;
+  margin: 6px 0;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 40% 60% 50% 50% / 60% 40% 55% 45%;
+  transform-origin: left;
+  animation: penDraw 1.4s ease-in-out infinite;
+}
+
+.ai-question-skeleton .pencil-line:nth-of-type(1) { animation-delay: 0s; }
+.ai-question-skeleton .pencil-line:nth-of-type(2) { animation-delay: 0.18s; }
+.ai-question-skeleton .pencil-line:nth-of-type(3) { animation-delay: 0.36s; }
+
+@keyframes penDraw {
+  0%   { transform: scaleX(0); opacity: 0.4; }
+  55%  { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0.2; }
+}
+
+.skeleton-caption {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  animation: captionPulse 2s ease-in-out infinite;
+}
+
+@keyframes captionPulse {
+  50% { opacity: 0.5; }
+}
+
+/* ─────────────────────────────────────────
+   v2 폴리시 — AI 질문 잉크 번짐 리빌
+   ───────────────────────────────────────── */
+.q-word {
+  display: inline-block;
+  opacity: 0;
+  animation: inkIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes inkIn {
+  from { opacity: 0; filter: blur(3px); transform: translateY(4px); }
+  to   { opacity: 1; filter: blur(0);  transform: translateY(0); }
+}
+
+/* 질문 카드 등장 — 살짝 스케일 정착 */
+.ai-question-card {
+  animation: questionCardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes questionCardIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 동의 체크박스/입력란 — 질문이 먼저 읽히도록 늦게 등장 */
+#ai-question-content > *:not(.ai-question-card) {
+  animation: followUpFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both;
+}
+
+@keyframes followUpFadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+/* ─────────────────────────────────────────
+   v2 폴리시 — 프로그레스 바 연필 촉
+   ───────────────────────────────────────── */
+.step-progress {
+  overflow: visible;
+}
+
+.step-progress-bar {
+  position: relative;
+  border-radius: 40% 60% 55% 45% / 55% 45% 60% 40%;
+}
+
+.step-progress-bar::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  transform: translateY(-50%);
+}
+
+/* ─────────────────────────────────────────
+   v2 폴리시 — 하단 탭바 스케치 밑줄
+   ───────────────────────────────────────── */
+.tab-item .tab-label {
+  position: relative;
+  transition: transform 0.15s ease;
+}
+
+.tab-item:active .tab-label {
+  transform: scale(0.95);
+}
+
+.tab-item.active .tab-label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  border-bottom: 2px solid #ffffff;
+  filter: url(#sketchy);
+  transform-origin: left;
+  animation: inkUnderline 0.25s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ─────────────────────────────────────────
+   v2 폴리시 — prefers-reduced-motion
+   ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .answer-word,
+  .q-word {
+    opacity: 1 !important;
+  }
 }
