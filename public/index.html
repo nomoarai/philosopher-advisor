@@ -68,22 +68,42 @@
         </div>
       </section>
 
-      <!-- ── STEP 2: 상황 선택 (탭) ── -->
-      <section id="step-situation" class="step">
+      <!-- ── STEP 2a: 주제 선택 ── -->
+      <section id="step-theme" class="step">
         <div class="container">
           <button id="btn-back-mood" class="btn-back">← 이전</button>
           <p class="step-label">Step 2 / 3</p>
           <div class="step-progress"><div class="step-progress-bar" style="width: 66%"></div></div>
           <header class="step-header">
-            <h2 class="step-title">요즘 어떠세요?</h2>
+            <h2 class="step-title">무엇에 대해<br>얘기하고 싶어요?</h2>
           </header>
-          <!-- 탭 바 -->
-          <div class="situation-tabs" id="situation-tabs">
-            <button class="situation-tab active" data-tab="일">일</button>
-            <button class="situation-tab" data-tab="미래">미래</button>
-            <button class="situation-tab" data-tab="인간관계">인간관계</button>
+          <div class="theme-card-list">
+            <button class="theme-card" data-theme="일">
+              <span class="theme-card-emoji">💼</span>
+              <span class="theme-card-label">일</span>
+            </button>
+            <button class="theme-card" data-theme="미래">
+              <span class="theme-card-emoji">🌅</span>
+              <span class="theme-card-label">미래</span>
+            </button>
+            <button class="theme-card" data-theme="인간관계">
+              <span class="theme-card-emoji">🤝</span>
+              <span class="theme-card-label">인간관계</span>
+            </button>
           </div>
-          <!-- 탭 패널: 일 -->
+        </div>
+      </section>
+
+      <!-- ── STEP 2b: 상황 선택 ── -->
+      <section id="step-situation" class="step">
+        <div class="container">
+          <button id="btn-back-theme" class="btn-back">← 이전</button>
+          <p class="step-label">Step 2 / 3</p>
+          <div class="step-progress"><div class="step-progress-bar" style="width: 66%"></div></div>
+          <header class="step-header">
+            <h2 class="step-title" id="situation-title">요즘 어떠세요?</h2>
+          </header>
+          <!-- 패널: 일 -->
           <div class="tab-panel active" data-panel="일">
             <div class="option-list">
               <button class="option-card" data-value="일이 잘 풀리고 있어, 더 잘하고 싶어">일이 잘 풀리고 있어, 더 잘하고 싶어</button>
@@ -92,7 +112,7 @@
               <button class="option-card" data-value="열심히 하는데 방향이 맞는지 모르겠어">열심히 하는데 방향이 맞는지 모르겠어</button>
             </div>
           </div>
-          <!-- 탭 패널: 미래 -->
+          <!-- 패널: 미래 -->
           <div class="tab-panel" data-panel="미래">
             <div class="option-list">
               <button class="option-card" data-value="새로운 방향이 보이는 것 같아서 설레">새로운 방향이 보이는 것 같아서 설레</button>
@@ -101,7 +121,7 @@
               <button class="option-card" data-value="앞이 전혀 안 보이는 느낌이야">앞이 전혀 안 보이는 느낌이야</button>
             </div>
           </div>
-          <!-- 탭 패널: 인간관계 -->
+          <!-- 패널: 인간관계 -->
           <div class="tab-panel" data-panel="인간관계">
             <div class="option-list">
               <button class="option-card" data-value="좋은 사람을 만났는데 어떻게 더 잘 지낼지 고민돼">좋은 사람을 만났는데 어떻게 더 잘 지낼지 고민돼</button>

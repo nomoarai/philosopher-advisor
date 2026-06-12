@@ -2151,6 +2151,52 @@ body:has(#step-intro.active) .btn-global-home {
   from { opacity: 0; transform: translateY(6px); }
 }
 
+/* ─── 주제 선택 카드 (step-theme) ─── */
+.theme-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.theme-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  padding: 22px 24px;
+  background: #ffffff;
+  border: 2px solid #111111;
+  border-radius: 4px 12px 5px 11px / 10px 5px 12px 4px;
+  filter: url(#sketchy);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.12s ease, background 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.theme-card:hover {
+  background: #f7f7f5;
+  transform: translateY(-1px);
+}
+
+.theme-card:active {
+  transform: translateY(1px);
+}
+
+.theme-card-emoji {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.theme-card-label {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
 /* ─────────────────────────────────────────
    v2 — AI 질문 카드 (STEP 4)
    ───────────────────────────────────────── */

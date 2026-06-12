@@ -35,6 +35,7 @@ const LOCAL_STORAGE_KEYS = {
 const steps = {
   intro:      document.getElementById('step-intro'),
   mood:       document.getElementById('step-mood'),
+  theme:      document.getElementById('step-theme'),
   situation:  document.getElementById('step-situation'),
   mindset:    document.getElementById('step-mindset'),
   aiQuestion: document.getElementById('step-ai-question'),
@@ -63,7 +64,7 @@ const btnStartIntro     = document.getElementById('btn-start-intro');
 const btnNextMood       = document.getElementById('btn-next-mood');
 const btnBackMood       = document.getElementById('btn-back-mood');
 const btnNextSituation  = document.getElementById('btn-next-situation');
-const btnBackSituation  = document.getElementById('btn-back-situation');
+const btnBackTheme      = document.getElementById('btn-back-theme');
 const btnBackMindset    = document.getElementById('btn-back-mindset');
 const btnSubmitAnswer   = document.getElementById('btn-submit-answer');
 
@@ -263,9 +264,8 @@ function resetState() {
 
   document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
 
-  // 탭 & 패널 초기화 (일 탭으로)
-  document.querySelectorAll('.situation-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
-  document.querySelectorAll('.tab-panel').forEach((p, i) => p.classList.toggle('active', i === 0));
+  // 상황 패널 초기화 (일 패널로)
+  document.querySelectorAll('#step-situation .tab-panel').forEach((p, i) => p.classList.toggle('active', i === 0));
 
   if (btnNextMood)       btnNextMood.disabled      = true;
   if (btnNextSituation)  btnNextSituation.disabled = true;
@@ -342,8 +342,8 @@ if (btnAdminAuth) {
 // ─────────────────────────────────────────
 // 스텝 전환
 // ─────────────────────────────────────────
-const STEP_ORDER    = { intro: 0, mood: 1, situation: 2, mindset: 3, aiQuestion: 4, answer: 5 };
-const STEP_PROGRESS = { mood: { from: 0, to: 33 }, situation: { from: 33, to: 66 }, mindset: { from: 66, to: 100 } };
+const STEP_ORDER    = { intro: 0, mood: 1, theme: 2, situation: 2, mindset: 3, aiQuestion: 4, answer: 5 };
+const STEP_PROGRESS = { mood: { from: 0, to: 33 }, theme: { from: 33, to: 66 }, situation: { from: 33, to: 66 }, mindset: { from: 66, to: 100 } };
 let currentStepName    = 'intro';
 let stepTransitioning  = false;
 
@@ -432,35 +432,51 @@ document.querySelectorAll('#mood-options .option-card').forEach(card => {
   });
 });
 
-btnNextMood.addEventListener('click', () => pencilAction(btnNextMood, () => showStep('situation')));
+btnNextMood.addEventListener('click', () => pencilAction(btnNextMood, () => showStep('theme')));
 btnBackMood.addEventListener('click', () => showStep('mood'));
 
 // ─────────────────────────────────────────
-// STEP 2: 상황 선택 (탭)
+// STEP 2a: 주제 선택
 // ─────────────────────────────────────────
-// 탭 전환 (표시 전환만)
-document.querySelectorAll('.situation-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.situation-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelector(`.tab-panel[data-panel="${tab.dataset.tab}"]`).classList.add('active');
+const situationTitle = document.getElementById('situation-title');
+const THEME_TITLE = {
+  일:      '일에 대해\n요즘 어떠세요?',
+  미래:    '미래에 대해\n요즘 어떠세요?',
+  인간관계: '인간관계에서\n요즘 어떠세요?'
+};
+
+document.querySelectorAll('.theme-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const theme = card.dataset.theme;
+    state.theme = theme;
+    state.situation = null;
+    // 해당 주제 패널만 표시
+    document.querySelectorAll('#step-situation .tab-panel').forEach(p => {
+      p.classList.toggle('active', p.dataset.panel === theme);
+    });
+    // 상황 선택 초기화
+    document.querySelectorAll('#step-situation .option-card').forEach(c => c.classList.remove('selected'));
+    btnNextSituation.disabled = true;
+    // 제목 업데이트
+    if (situationTitle) situationTitle.textContent = THEME_TITLE[theme] || '요즘 어떠세요?';
+    showStep('situation');
   });
 });
 
-// 상황 옵션 선택 (모든 탭 패널 통합)
+// ─────────────────────────────────────────
+// STEP 2b: 상황 선택
+// ─────────────────────────────────────────
 document.querySelectorAll('#step-situation .option-card').forEach(card => {
   card.addEventListener('click', () => {
     document.querySelectorAll('#step-situation .option-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     state.situation = card.dataset.value;
-    state.theme     = card.closest('.tab-panel').dataset.panel;
     btnNextSituation.disabled = false;
   });
 });
 
 btnNextSituation.addEventListener('click', () => pencilAction(btnNextSituation, () => showStep('mindset')));
-btnBackSituation.addEventListener('click', () => showStep('situation'));
+if (btnBackTheme) btnBackTheme.addEventListener('click', () => showStep('theme'));
 
 // ─────────────────────────────────────────
 // STEP 3: 사고방식 선택 → 철학자 결정 + AI 질문 생성
