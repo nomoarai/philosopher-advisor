@@ -28,11 +28,11 @@
       <!-- ── STEP 0: 인트로 ── -->
       <section id="step-intro" class="step active">
         <div class="intro-bg-layer">
-          <div class="intro-bg-top"><img src="/images/Hero_top.png" alt="" /></div>
-          <div class="intro-bg-bottom"><img src="/images/Hero_bottom.png" alt="" /></div>
+          <div class="intro-bg-top"><img src="/images/top.png" alt="" /></div>
+          <div class="intro-bg-bottom"><img src="/images/bottom.png" alt="" /></div>
         </div>
+        <div class="hero-frame-border"></div>
         <div class="intro-content-layer">
-          <div class="intro-logo"><img src="/images/eciff.png" alt="ECIFF" /></div>
           <div class="intro-main-box">
             <div class="intro-title-wrapper">
               <img src="/images/Temple of insight.png" alt="TEMPLE OF INSIGHT" class="intro-title-img"
@@ -45,6 +45,25 @@
               꼭 맞는 질문을 건넵니다.
             </p>
             <button id="btn-start-intro" class="intro-cta-btn">오늘의 철학자 만나기</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STEP 0.5: 닉네임 입력 ── -->
+      <section id="step-name" class="step">
+        <div class="container">
+          <div class="name-prompt-wrap">
+            <p class="name-question">당신을 뭐라고<br>부르면 좋을까요?</p>
+            <input
+              id="name-input"
+              class="name-input"
+              type="text"
+              maxlength="20"
+              placeholder="닉네임 또는 이름"
+              autocomplete="off"
+            />
+            <button id="btn-name-next" class="btn-primary" disabled>다음 →</button>
+            <button id="btn-name-skip" class="btn-text-skip">건너뛰기</button>
           </div>
         </div>
       </section>
@@ -130,6 +149,9 @@
               <button class="option-card" data-value="내 말이나 의도가 잘 전달이 안 되는 것 같아">내 말이나 의도가 잘 전달이 안 되는 것 같아</button>
               <button class="option-card" data-value="이 관계에서 내 역할이 뭔지 모르겠어">이 관계에서 내 역할이 뭔지 모르겠어</button>
             </div>
+          </div>
+          <div class="situation-custom-wrap">
+            <textarea id="situation-custom" class="situation-custom" placeholder="직접 써도 좋아요…" rows="2"></textarea>
           </div>
           <button id="btn-next-situation" class="btn-primary" disabled>다음 →</button>
         </div>

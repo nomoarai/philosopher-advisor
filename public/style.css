@@ -1097,47 +1097,85 @@ textarea::placeholder {
 .post-meta {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   text-align: left;
 }
 
-.post-philo-name {
+.post-title {
   font-family: var(--font-serif);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-text-primary);
+  line-height: 1.4;
 }
 
 .post-date {
   font-size: 11px;
   color: var(--color-text-muted);
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
-/* ↕️ 아코디언 토글 가능 영역 */
-.post-question-container {
+/* 카드 본문: 두 섹션 컨테이너 */
+.post-body {
   padding: 16px 20px;
-  cursor: pointer;
-  transition: background-color var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.post-question-container:hover {
-  background-color: rgba(20, 20, 19, 0.02);
+.post-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-section--answer {
+  padding-top: 16px;
+  border-top: 1px dashed rgba(20, 20, 19, 0.15);
+}
+
+.post-section-label {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
 }
 
 .post-question {
   padding: 14px 18px;
   background: var(--color-bg);
   border-left: 3px solid #111111;
-  border-radius: 0;
   font-size: 14px;
   color: var(--color-text-secondary);
   line-height: 1.6;
   text-align: left;
 }
 
+.post-user-answer {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.65;
+  text-align: left;
+  white-space: pre-wrap;
+  padding: 0 2px;
+}
+
+/* 철학자 전문 답변 아코디언 */
+.post-philo-answer-container {
+  cursor: pointer;
+  border-top: 1px solid rgba(20, 20, 19, 0.08);
+  transition: background-color var(--transition);
+}
+
+.post-philo-answer-container:hover {
+  background-color: rgba(20, 20, 19, 0.02);
+}
+
 .accordion-bar {
   text-align: right;
-  padding-top: 6px;
+  padding: 10px 20px 6px;
   display: flex;
   justify-content: flex-end;
 }
@@ -1152,7 +1190,7 @@ textarea::placeholder {
   user-select: none;
 }
 
-/* 접혀 있는 답변 */
+/* 접혀 있는 철학자 답변 */
 .post-answer {
   font-family: var(--font-serif);
   font-size: 15px;
@@ -1164,18 +1202,16 @@ textarea::placeholder {
   overflow: hidden;
   opacity: 0;
   padding: 0 20px;
-  border-top: 2px dashed transparent;
   transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
     opacity 0.25s ease,
     padding 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* 펼쳐진 답변 상태 */
+/* 펼쳐진 철학자 답변 */
 .post-card.open .post-answer {
   max-height: 1000px;
   opacity: 1;
   padding: 20px;
-  border-top: none;
   background: var(--color-surface);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   position: relative;
@@ -1588,6 +1624,69 @@ body:has(#tab-community.active) .side-pillar {
    STEP 0 — 인트로 랜딩 페이지
    ───────────────────────────────────────── */
 
+/* ─────────────────────────────────────────
+   step-name — 닉네임 입력 화면
+   ───────────────────────────────────────── */
+.name-prompt-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  gap: 20px;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.name-question {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.name-input {
+  width: 100%;
+  max-width: 280px;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  background: transparent;
+  border: 1.5px solid #ccc;
+  border-radius: 4px 10px 5px 9px / 9px 4px 10px 5px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: var(--color-text-primary);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.name-input::placeholder {
+  color: #aaa;
+}
+
+.name-input:focus {
+  border-color: #111;
+}
+
+.btn-text-skip {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.btn-text-skip:hover {
+  color: var(--color-text-primary);
+}
+
 /* 인트로 활성화 시 탭바·홈버튼 숨김 */
 body:has(#step-intro.active) {
   padding-top: 0;
@@ -1612,25 +1711,25 @@ body:has(#step-intro.active) .btn-global-home {
   /* display: block !important 제거 — .step / .step.active 규칙을 따름 */
 }
 
-/* 인트로 상단 로고 가시성을 위한 화이트 그라데이션 오버레이 */
-#step-intro::before {
-  content: '';
+/* 더블 스트로크 프레임 오버레이 */
+.hero-frame-border {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 140px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.8) 55%, transparent 100%);
-  z-index: 1;
+  inset: 14px;
+  border: 2px solid #000;
+  outline: 4px solid #000;
+  outline-offset: 2px;
   pointer-events: none;
+  z-index: 10;
+  box-sizing: border-box;
 }
 
 /* ── BG 레이어: 태양·달 이미지 ── */
 .intro-bg-layer {
   position: absolute;
-  inset: 0;
+  inset: 16px; /* 프레임 inset(14px) + inner border(2px) — 이미지가 내부 스트로크에 맞닿음 */
   z-index: 0;
   pointer-events: none;
+  overflow: hidden;
 }
 
 /* 태양 이미지 — 화면 상단 고정, 넘치면 clip */
@@ -1677,21 +1776,6 @@ body:has(#step-intro.active) .btn-global-home {
   justify-content: flex-start;
   padding: 44px 24px 52px;
   box-sizing: border-box;
-}
-
-/* ECIFF 로고 */
-.intro-logo {
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.intro-logo img {
-  height: 100%;
-  width: auto;
-  object-fit: contain;
 }
 
 /* 중앙 메인 박스 — 남은 공간을 채워 세로 중앙 정렬 */
@@ -2195,6 +2279,37 @@ body:has(#step-intro.active) .btn-global-home {
   font-weight: 600;
   color: var(--color-text-primary);
   letter-spacing: -0.02em;
+}
+
+/* ─────────────────────────────────────────
+   v2 — situation 직접 입력
+   ───────────────────────────────────────── */
+.situation-custom-wrap {
+  margin: 0 0 20px;
+}
+
+.situation-custom {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  background: transparent;
+  border: 1.5px solid #ccc;
+  border-radius: 4px 10px 5px 9px / 9px 4px 10px 5px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.situation-custom::placeholder {
+  color: #aaa;
+}
+
+.situation-custom:focus {
+  border-color: #111;
 }
 
 /* ─────────────────────────────────────────

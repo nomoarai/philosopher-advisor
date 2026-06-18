@@ -2,6 +2,7 @@
 // 상태 및 설정
 // ─────────────────────────────────────────
 const state = {
+  userName: '',
   mood: null,
   theme: '일',
   situation: null,
@@ -34,6 +35,7 @@ const LOCAL_STORAGE_KEYS = {
 // ─────────────────────────────────────────
 const steps = {
   intro:      document.getElementById('step-intro'),
+  name:       document.getElementById('step-name'),
   mood:       document.getElementById('step-mood'),
   theme:      document.getElementById('step-theme'),
   situation:  document.getElementById('step-situation'),
@@ -61,6 +63,9 @@ const btnAdminAuth       = document.getElementById('btn-admin-auth');
 
 // STEP 버튼
 const btnStartIntro     = document.getElementById('btn-start-intro');
+const nameInput         = document.getElementById('name-input');
+const btnNameNext       = document.getElementById('btn-name-next');
+const btnNameSkip       = document.getElementById('btn-name-skip');
 const btnNextMood       = document.getElementById('btn-next-mood');
 const btnBackMood       = document.getElementById('btn-back-mood');
 const btnNextSituation  = document.getElementById('btn-next-situation');
@@ -269,6 +274,7 @@ function resetState() {
 
   if (btnNextMood)       btnNextMood.disabled      = true;
   if (btnNextSituation)  btnNextSituation.disabled = true;
+  if (situationCustom)   situationCustom.value      = '';
   if (userAnswerInput)   userAnswerInput.value      = '';
   if (answerCharCurrent) answerCharCurrent.textContent = '0';
   if (shareConsentCheckbox) shareConsentCheckbox.checked = false;
@@ -342,7 +348,7 @@ if (btnAdminAuth) {
 // ─────────────────────────────────────────
 // 스텝 전환
 // ─────────────────────────────────────────
-const STEP_ORDER    = { intro: 0, mood: 1, theme: 2, situation: 2, mindset: 3, aiQuestion: 4, answer: 5 };
+const STEP_ORDER    = { intro: 0, name: 0.5, mood: 1, theme: 2, situation: 2, mindset: 3, aiQuestion: 4, answer: 5 };
 const STEP_PROGRESS = { mood: { from: 0, to: 33 }, theme: { from: 33, to: 66 }, situation: { from: 33, to: 66 }, mindset: { from: 66, to: 100 } };
 let currentStepName    = 'intro';
 let stepTransitioning  = false;
@@ -396,7 +402,7 @@ function showStep(name) {
 
   // 인트로 진출입, 답변 화면(비디오 트랜지션이 덮음), 동일 스텝 재진입은 퇴장 생략
   const skipExit = PREFERS_REDUCED || prev === name || prev === 'intro' || name === 'intro' ||
-                   name === 'answer' || !prevEl || !prevEl.classList.contains('active');
+                   prev === 'name' || name === 'answer' || !prevEl || !prevEl.classList.contains('active');
 
   if (skipExit) {
     finishEnter(name === 'answer' || name === 'intro' ? null : 'enter-fwd');
@@ -417,7 +423,30 @@ function showStep(name) {
 // STEP 0: 인트로
 // ─────────────────────────────────────────
 if (btnStartIntro) {
-  btnStartIntro.addEventListener('click', () => pencilAction(btnStartIntro, () => showStep('mood')));
+  btnStartIntro.addEventListener('click', () => pencilAction(btnStartIntro, () => showStep('name')));
+}
+
+// ─────────────────────────────────────────
+// STEP 0.5: 닉네임 입력
+// ─────────────────────────────────────────
+if (nameInput) {
+  nameInput.addEventListener('input', () => {
+    btnNameNext.disabled = nameInput.value.trim().length === 0;
+  });
+}
+
+if (btnNameNext) {
+  btnNameNext.addEventListener('click', () => {
+    state.userName = nameInput ? nameInput.value.trim() : '';
+    showStep('mood');
+  });
+}
+
+if (btnNameSkip) {
+  btnNameSkip.addEventListener('click', () => {
+    state.userName = '';
+    showStep('mood');
+  });
 }
 
 // ─────────────────────────────────────────
@@ -438,7 +467,8 @@ btnBackMood.addEventListener('click', () => showStep('mood'));
 // ─────────────────────────────────────────
 // STEP 2a: 주제 선택
 // ─────────────────────────────────────────
-const situationTitle = document.getElementById('situation-title');
+const situationTitle  = document.getElementById('situation-title');
+const situationCustom = document.getElementById('situation-custom');
 const THEME_TITLE = {
   일:      '일에 대해\n요즘 어떠세요?',
   미래:    '미래에 대해\n요즘 어떠세요?',
@@ -456,6 +486,7 @@ document.querySelectorAll('.theme-card').forEach(card => {
     });
     // 상황 선택 초기화
     document.querySelectorAll('#step-situation .option-card').forEach(c => c.classList.remove('selected'));
+    if (situationCustom) situationCustom.value = '';
     btnNextSituation.disabled = true;
     // 제목 업데이트
     if (situationTitle) situationTitle.textContent = THEME_TITLE[theme] || '요즘 어떠세요?';
@@ -471,9 +502,24 @@ document.querySelectorAll('#step-situation .option-card').forEach(card => {
     document.querySelectorAll('#step-situation .option-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     state.situation = card.dataset.value;
+    if (situationCustom) situationCustom.value = '';
     btnNextSituation.disabled = false;
   });
 });
+
+if (situationCustom) {
+  situationCustom.addEventListener('input', () => {
+    const val = situationCustom.value.trim();
+    if (val) {
+      document.querySelectorAll('#step-situation .option-card').forEach(c => c.classList.remove('selected'));
+      state.situation = val;
+      btnNextSituation.disabled = false;
+    } else {
+      state.situation = null;
+      btnNextSituation.disabled = true;
+    }
+  });
+}
 
 btnNextSituation.addEventListener('click', () => pencilAction(btnNextSituation, () => showStep('mindset')));
 if (btnBackTheme) btnBackTheme.addEventListener('click', () => showStep('theme'));
@@ -655,7 +701,8 @@ async function fetchAnswerData() {
         philosopher:       state.philosopher,
         generatedQuestion: state.generatedQuestion,
         userAnswer:        state.userAnswer,
-        shareConsent:      state.shareConsent
+        shareConsent:      state.shareConsent,
+        userName:          state.userName
       })
     });
     const data = await res.json();
@@ -833,22 +880,38 @@ async function loadCommunityPosts() {
       const deleteBtn = state.isAdmin
         ? `<button class="btn-delete-post" data-id="${post.id}">🗑️ 삭제</button>` : '';
 
+      const arrowIdx = post.question.indexOf('\n\n→ ');
+      const philoQ = arrowIdx >= 0 ? post.question.slice(0, arrowIdx).trim() : post.question.trim();
+      const userAns = arrowIdx >= 0 ? post.question.slice(arrowIdx + 4).trim() : '';
+      const firstSentence = philoQ.split(/[.!?\n]/)[0].trim();
+      const titleText = firstSentence.length > 28 ? firstSentence.slice(0, 28) + '…' : firstSentence;
+
       const card = document.createElement('div');
       card.className = 'post-card';
       card.innerHTML = `
         <div class="post-header">
           <div class="post-philosopher-avatar"><img src="${meta.avatar}" alt="${meta.ko}" /></div>
           <div class="post-meta">
-            <span class="post-philo-name">${meta.ko}의 시선</span>
+            <span class="post-title">${escapeHTML(titleText)}</span>
             <span class="post-date">${formatRelativeTime(post.createdAt)}</span>
           </div>
           ${deleteBtn}
         </div>
-        <div class="post-question-container">
-          <div class="post-question">" ${escapeHTML(post.question)} "</div>
-          <div class="accordion-bar"><span class="accordion-toggle">답변 보기 ▾</span></div>
+        <div class="post-body">
+          <div class="post-section">
+            <div class="post-section-label">${meta.ko}의 시선</div>
+            <div class="post-question">" ${escapeHTML(philoQ)} "</div>
+          </div>
+          ${userAns ? `
+          <div class="post-section post-section--answer">
+            <div class="post-section-label">${post.userName ? escapeHTML(post.userName) + '의 답변' : '답변'}</div>
+            <div class="post-user-answer">${escapeHTML(userAns)}</div>
+          </div>` : ''}
         </div>
-        <div class="post-answer">${escapeHTML(post.answer)}</div>
+        <div class="post-philo-answer-container">
+          <div class="accordion-bar"><span class="accordion-toggle">${meta.ko}의 답변 ▾</span></div>
+          <div class="post-answer">${escapeHTML(post.answer)}</div>
+        </div>
         <div class="post-footer">
           <button class="like-btn ${isLiked ? 'liked' : ''}" data-id="${post.id}">
             <span class="heart-icon">${isLiked ? '❤️' : '🤍'}</span>
@@ -857,9 +920,9 @@ async function loadCommunityPosts() {
         </div>`;
 
       const toggleSpan = card.querySelector('.accordion-toggle');
-      card.querySelector('.post-question-container').addEventListener('click', () => {
+      card.querySelector('.post-philo-answer-container').addEventListener('click', () => {
         card.classList.toggle('open');
-        toggleSpan.textContent = card.classList.contains('open') ? '답변 닫기 ▴' : '답변 보기 ▾';
+        toggleSpan.textContent = card.classList.contains('open') ? `${meta.ko}의 답변 ▴` : `${meta.ko}의 답변 ▾`;
       });
 
       if (state.isAdmin) {
