@@ -1711,22 +1711,10 @@ body:has(#step-intro.active) .btn-global-home {
   /* display: block !important 제거 — .step / .step.active 규칙을 따름 */
 }
 
-/* 더블 스트로크 프레임 오버레이 */
-.hero-frame-border {
-  position: absolute;
-  inset: 14px;
-  border: 2px solid #000;
-  outline: 4px solid #000;
-  outline-offset: 2px;
-  pointer-events: none;
-  z-index: 10;
-  box-sizing: border-box;
-}
-
-/* ── BG 레이어: 태양·달 이미지 ── */
+/* ── BG 레이어: 구름 — 풀프레임(화면 끝까지) ── */
 .intro-bg-layer {
   position: absolute;
-  inset: 16px; /* 프레임 inset(14px) + inner border(2px) — 이미지가 내부 스트로크에 맞닿음 */
+  inset: 0; /* 풀프레임 — 구름이 화면 가장자리까지 닿음 */
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
