@@ -1732,36 +1732,145 @@ body:has(#step-intro.active) .btn-global-home {
   overflow: hidden;
 }
 
-/* 태양 이미지 — 화면 상단 고정, 넘치면 clip */
-.intro-bg-top {
+/* ── 겹겹이 구름 패럴랙스 ── */
+.intro-clouds {
   position: absolute;
+  left: 0;
+  right: 0;
+  height: 380px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 상단 구름: 하단의 거울 — 크라운이 아래로 향하도록 상하 반전 */
+.intro-clouds--top {
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 110%;
-  max-width: 560px;
+  transform: scaleY(-1);
 }
 
-.intro-bg-top img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* 달+별 이미지 — 화면 하단 고정, 넘치면 clip */
-.intro-bg-bottom {
-  position: absolute;
+/* 하단 구름 */
+.intro-clouds--bottom {
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 110%;
-  max-width: 560px;
 }
 
-.intro-bg-bottom img {
+/* 각 구름 레이어 — 절대배치, 가로 무한 흐름 트랙 */
+.cloud-layer {
+  position: absolute;
+  left: 0;
   width: 100%;
-  height: auto;
+  overflow: hidden;
+}
+
+.cloud-track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  animation: cloudFlow linear infinite;
+}
+
+.cloud-track img {
+  height: 100%;
+  width: auto;
   display: block;
+}
+
+@keyframes cloudFlow {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* 두 그룹 모두 모서리(bottom:0)에 앉힘 — 상단은 컨테이너 scaleY(-1)로 거울 반전 */
+/* front: 크기 1.0 / 속도 1.0(40s) / 맨 앞 */
+.cloud-front {
+  bottom: 0;
+  height: 280px;
+  z-index: 3;
+}
+.cloud-front .cloud-track { animation-duration: 40s; }
+
+/* mid: 크기 0.7 / 속도 0.5 / 중간 — front 안쪽으로 삐져나옴 */
+.cloud-mid {
+  bottom: 130px;
+  height: 196px;
+  z-index: 2;
+}
+/* duration = height/speed: 작은 레이어는 트랙 폭도 작아 px속도가 더 느려지므로 보정 */
+.cloud-mid .cloud-track { animation-duration: 56s; }
+
+/* back: 크기 0.3 / 속도 0.2 / 맨 뒤 — 가장 멀리 */
+.cloud-back {
+  bottom: 220px;
+  height: 84px;
+  z-index: 1;
+  opacity: 0.85;
+}
+.cloud-back .cloud-track { animation-duration: 60s; }
+
+/* ── 다이브 인터랙션: 구름 속으로 빨려드는 zoom-through ── */
+/* 레이어 transform/filter는 트랙의 흐름(translateX)과 충돌 없이 합성됨 */
+.cloud-layer {
+  transition: transform 1s cubic-bezier(0.66, 0, 0.86, 0.2),
+              filter 1s ease-in,
+              opacity 0.9s ease-in;
+}
+
+.intro-main-box {
+  transition: transform 0.55s cubic-bezier(0.66, 0, 0.86, 0.2),
+              opacity 0.5s ease-in;
+}
+
+/* 흰 페이드 오버레이 — 모든 레이어 위 */
+.intro-flash {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  transition: opacity 0.45s ease-in 0.55s;
+}
+
+/* 다이브 발동: 구름 클립 해제 — 단 .intro-bg-layer(inset 16px)는 hidden 유지해
+   확대된 구름이 스트로크 프레임 안쪽에서 잘리게 함 */
+#step-intro.diving .intro-clouds,
+#step-intro.diving .cloud-layer {
+  overflow: visible;
+}
+
+/* 깊이별 가중치: front(가까움)가 가장 크게 확대 + 가장 멀리 빠져나감 */
+#step-intro.diving .cloud-front {
+  transform: translateY(520px) scale(3.2);
+  filter: blur(6px);
+  opacity: 0;
+}
+#step-intro.diving .cloud-mid {
+  transform: translateY(340px) scale(2.3);
+  filter: blur(4px);
+  opacity: 0.5;
+}
+#step-intro.diving .cloud-back {
+  transform: translateY(180px) scale(1.6);
+  filter: blur(2px);
+  opacity: 0.7;
+}
+
+/* 콘텐츠는 살짝 확대되며 사라짐(카메라가 통과) */
+#step-intro.diving .intro-main-box {
+  transform: scale(1.18);
+  opacity: 0;
+}
+
+/* 흰 페이드 인 */
+#step-intro.diving .intro-flash {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud-layer,
+  .intro-main-box,
+  .intro-flash {
+    transition: none;
+  }
 }
 
 /* ── 콘텐츠 레이어: 로고 / 타이틀 / 설명 / 버튼 ── */
@@ -1889,11 +1998,12 @@ body:has(#step-intro.active) .btn-global-home {
     line-height: 1.65;
   }
 
-  .intro-bg-top,
-  .intro-bg-bottom {
-    width: 100%;
-    max-width: 100%;
+  .intro-clouds {
+    height: 320px;
   }
+  .cloud-front { height: 210px; }
+  .cloud-mid  { bottom: 100px; height: 147px; }
+  .cloud-back { bottom: 170px; height: 63px; }
 }
 
 /* ─────────────────────────────────────────
