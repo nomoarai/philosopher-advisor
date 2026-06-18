@@ -2,8 +2,14 @@
 // 상태 및 설정
 // ─────────────────────────────────────────
 const state = {
-  question: '',
+  userName: '',
+  mood: null,
+  theme: '일',
+  situation: null,
+  mindset: null,
   philosopher: null,
+  generatedQuestion: null,
+  userAnswer: '',
   shareConsent: false,
   currentTab: 'ask',
   postsSortBy: 'latest',
@@ -12,11 +18,11 @@ const state = {
 };
 
 const philosopherMeta = {
-  epicurus:     { en: 'Epicurus',     ko: '에피쿠로스',     avatar: '/images/epicurus.png',     docGreek: 'ἀταραξία',       docEn: 'tranquility'      },
-  plato:        { en: 'Plato',        ko: '플라톤',         avatar: '/images/plato.png',         docGreek: 'δικαιοσύνη',     docEn: 'justice'          },
-  aristoteles:  { en: 'Aristoteles',  ko: '아리스토텔레스', avatar: '/images/aristoteles.png',   docGreek: 'εὐδαιμονία',     docEn: 'human flourishing'},
-  heraclitus:   { en: 'Heraclitus',   ko: '헤라클리투스',  avatar: '/images/heraclitus.png',    docGreek: 'πάντα ῥεῖ',     docEn: 'everything flows' },
-  socrates:     { en: 'Socrates',     ko: '소크라테스',     avatar: '/images/socrates.png',      docGreek: 'γνῶθι σεαυτόν', docEn: 'know yourself'    }
+  epicurus:    { en: 'Epicurus',     ko: '에피쿠로스',     avatar: '/images/epicurus.png',     docGreek: 'ἀταραξία',       docEn: 'tranquility'       },
+  plato:       { en: 'Plato',        ko: '플라톤',         avatar: '/images/plato.png',         docGreek: 'δικαιοσύνη',     docEn: 'justice'           },
+  aristoteles: { en: 'Aristoteles',  ko: '아리스토텔레스', avatar: '/images/aristoteles.png',   docGreek: 'εὐδαιμονία',     docEn: 'human flourishing' },
+  heraclitus:  { en: 'Heraclitus',   ko: '헤라클리투스',  avatar: '/images/heraclitus.png',    docGreek: 'πάντα ῥεῖ',     docEn: 'everything flows'  },
+  socrates:    { en: 'Socrates',     ko: '소크라테스',     avatar: '/images/socrates.png',      docGreek: 'γνῶθι σεαυτόν', docEn: 'know yourself'     }
 };
 
 const LOCAL_STORAGE_KEYS = {
@@ -28,10 +34,14 @@ const LOCAL_STORAGE_KEYS = {
 // DOM 참조
 // ─────────────────────────────────────────
 const steps = {
-  intro:       document.getElementById('step-intro'),
-  question:    document.getElementById('step-question'),
-  philosopher: document.getElementById('step-philosopher'),
-  answer:      document.getElementById('step-answer')
+  intro:      document.getElementById('step-intro'),
+  name:       document.getElementById('step-name'),
+  mood:       document.getElementById('step-mood'),
+  theme:      document.getElementById('step-theme'),
+  situation:  document.getElementById('step-situation'),
+  mindset:    document.getElementById('step-mindset'),
+  aiQuestion: document.getElementById('step-ai-question'),
+  answer:     document.getElementById('step-answer')
 };
 
 const tabs = {
@@ -39,17 +49,37 @@ const tabs = {
   community: document.getElementById('tab-community')
 };
 
-const btnStartIntro = document.getElementById('btn-start-intro');
+// 탭 버튼 및 커뮤니티
+const tabBtnAsk          = document.getElementById('tab-btn-ask');
+const tabBtnCommunity    = document.getElementById('tab-btn-community');
+const communityLock      = document.getElementById('community-lock');
+const communityActive    = document.getElementById('community-active');
+const btnGoAsk           = document.getElementById('btn-go-ask');
+const filterLatest       = document.getElementById('filter-latest');
+const filterLikes        = document.getElementById('filter-likes');
+const communityPostsList = document.getElementById('community-posts-list');
+const btnGlobalHome      = document.getElementById('btn-global-home');
+const btnAdminAuth       = document.getElementById('btn-admin-auth');
 
-// 입력 폼
-const questionInput        = document.getElementById('question-input');
-const charCurrent          = document.getElementById('char-current');
+// STEP 버튼
+const btnStartIntro     = document.getElementById('btn-start-intro');
+const nameInput         = document.getElementById('name-input');
+const btnNameNext       = document.getElementById('btn-name-next');
+const btnNameSkip       = document.getElementById('btn-name-skip');
+const btnNextMood       = document.getElementById('btn-next-mood');
+const btnBackMood       = document.getElementById('btn-back-mood');
+const btnNextSituation  = document.getElementById('btn-next-situation');
+const btnBackTheme      = document.getElementById('btn-back-theme');
+const btnBackMindset    = document.getElementById('btn-back-mindset');
+const btnSubmitAnswer   = document.getElementById('btn-submit-answer');
+
+// STEP 4 DOM
 const shareConsentCheckbox = document.getElementById('share-consent-checkbox');
-const btnNextStep          = document.getElementById('btn-next-step');
-
-// 이동 버튼
-const btnBackQuestion    = document.getElementById('btn-back-question');
-const btnBackPhilosopher = document.getElementById('btn-back-philosopher');
+const userAnswerInput      = document.getElementById('user-answer-input');
+const answerCharCurrent    = document.getElementById('answer-char-current');
+const aiQuestionLoading    = document.getElementById('ai-question-loading');
+const aiQuestionContent    = document.getElementById('ai-question-content');
+const aiQuestionText       = document.getElementById('ai-question-text');
 
 // 답변 화면
 const answerAvatarImg       = document.getElementById('answer-avatar-img');
@@ -65,24 +95,7 @@ const answerError           = document.getElementById('answer-error');
 const errorMessage          = document.getElementById('error-message');
 const answerActions         = document.getElementById('answer-actions');
 const btnRestart            = document.getElementById('btn-restart');
-const btnTryOther           = document.getElementById('btn-try-other');
-
-// 탭 버튼 및 커뮤니티 구조
-const tabBtnAsk          = document.getElementById('tab-btn-ask');
-const tabBtnCommunity    = document.getElementById('tab-btn-community');
-const communityLock      = document.getElementById('community-lock');
-const communityActive    = document.getElementById('community-active');
-const btnGoAsk           = document.getElementById('btn-go-ask');
-const filterLatest       = document.getElementById('filter-latest');
-const filterLikes        = document.getElementById('filter-likes');
-const communityPostsList = document.getElementById('community-posts-list');
-const btnGlobalHome      = document.getElementById('btn-global-home');
-const btnAdminAuth       = document.getElementById('btn-admin-auth');
-
-// 연필 스택 DOM
-const pencilStack   = document.getElementById('pencil-stack');
-const pencilHintBar = document.getElementById('pencil-hint-bar');
-const pencilItems   = document.querySelectorAll('.pencil-item');
+const btnBackPhilosopher    = document.getElementById('btn-back-philosopher');
 
 // 전환 영상
 const videoTransition           = document.getElementById('video-transition');
@@ -91,7 +104,124 @@ const transitionVideoOut        = document.getElementById('transition-video-out'
 const transitionLoading         = document.getElementById('transition-loading');
 const transitionLoadingSentence = document.getElementById('transition-loading-sentence');
 
-/* 한국어 주격조사: 받침 없으면 '가', 있으면 '이' */
+/* 모션 환경설정 */
+const PREFERS_REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+/* ─────────────────────────────────────────
+   버튼 연필 채움 인터랙션
+   ───────────────────────────────────────── */
+const PENCIL = {
+  strokeWidth: 1.5, // 연필 선 굵기
+  spacing: 1.2,     // 획 간격 — 빽빽하게
+  slant: 0.35,
+  strokeDur: 50,
+  maxTotal: 380,
+  jitter: 1.2,
+  segLen: 5,        // 폴리라인 분절 길이 px — 흔들림 해상도
+  wobble: 0.9       // 분절당 좌우 흔들림 진폭 px
+};
+
+// 손떨림이 좌표에 구워진 폴리라인 d 생성 — 필터 없이 연필 질감 (렌더링 비용 거의 0)
+function pencilStrokeD(x1, y1, x2, y2) {
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  const n = Math.max(2, Math.round(len / PENCIL.segLen));
+  const nx = -(y2 - y1) / len, ny = (x2 - x1) / len; // 수직 방향
+  let d = `M ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+  let off = 0;
+  for (let s = 1; s <= n; s++) {
+    const t = s / n;
+    // 부드러운 랜덤워크: 이전 오프셋에서 조금씩 이동, 중심으로 복원력
+    off = off * 0.55 + (Math.random() - 0.5) * PENCIL.wobble * 2;
+    const px = x1 + (x2 - x1) * t + nx * off;
+    const py = y1 + (y2 - y1) * t + ny * off;
+    d += ` L ${px.toFixed(1)} ${py.toFixed(1)}`;
+  }
+  return d;
+}
+
+function pencilFill(btn) {
+  if (PREFERS_REDUCED) return Promise.resolve();
+  if (btn.dataset.filling === 'true') return Promise.reject(new Error('filling'));
+  btn.dataset.filling = 'true';
+  btn.classList.add('btn-pencil-filling');
+
+  const w  = btn.offsetWidth;
+  const h  = btn.offsetHeight;
+  const dx = h * PENCIL.slant;
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'pencil-fill-svg');
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+
+  // 각 획을 2개의 가닥으로 — 0.8px 오프셋, opacity 차이로 흑연 레이어 표현
+  const paths = [];
+  const jit = () => (Math.random() - 0.5) * PENCIL.jitter * 2;
+  let x = -dx;
+  let i = 0;
+  while (x < w + PENCIL.spacing) {
+    [0, 0.8].forEach((offset, layer) => {
+      const topX = x + dx + jit() + offset;
+      const botX = x + jit() + offset;
+      const d = (i % 2 === 0)
+        ? pencilStrokeD(topX, -4 + jit(), botX, h + 4 + jit())
+        : pencilStrokeD(botX, h + 4 + jit(), topX, -4 + jit());
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('stroke-width', PENCIL.strokeWidth);
+      path.style.strokeOpacity = layer === 0 ? (0.85 + Math.random() * 0.15) : (0.45 + Math.random() * 0.3);
+      svg.appendChild(path);
+      paths.push({ path, strokeIdx: i });
+    });
+    x += PENCIL.spacing * (1 + (Math.random() - 0.5) * 0.16);
+    i++;
+  }
+
+  btn.appendChild(svg);
+
+  // 획 수는 strokeIdx 기준 (2 가닥 × N획이므로 고유 획 인덱스로 타이밍 계산)
+  const strokeCount = i; // while 루프에서 증가된 i = 총 획 수
+  const totalSpread = Math.min((strokeCount - 1) * 16, PENCIL.maxTotal - PENCIL.strokeDur);
+  const total = totalSpread + PENCIL.strokeDur;
+
+  paths.forEach(({ path, strokeIdx }) => {
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    // ease-out stagger: t^2 커브로 초반 빠르게 쏟아지고 후반 여유롭게 마무리
+    const t = strokeCount > 1 ? strokeIdx / (strokeCount - 1) : 0;
+    const animDelay = Math.pow(t, 2) * totalSpread;
+    path.animate(
+      [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+      { duration: PENCIL.strokeDur, delay: animDelay, easing: 'cubic-bezier(0, 0, 0.3, 1)', fill: 'both' }
+    );
+  });
+
+  // 채움이 중앙을 지날 때 글자 흰색 반전
+  setTimeout(() => btn.classList.add('btn-pencil-filled'), total * 0.45);
+
+  return new Promise(resolve => setTimeout(resolve, total));
+}
+
+function pencilFillReset(btn) {
+  const svg = btn.querySelector('.pencil-fill-svg');
+  if (svg) svg.remove();
+  btn.classList.remove('btn-pencil-filling', 'btn-pencil-filled');
+  delete btn.dataset.filling;
+}
+
+// 클릭 → 연필 채움 → 액션 → 전환 후 리셋
+function pencilAction(btn, action) {
+  pencilFill(btn)
+    .then(() => {
+      action();
+      setTimeout(() => pencilFillReset(btn), 400);
+    })
+    .catch(() => {}); // 채움 진행 중 중복 클릭 무시
+}
+
+/* 한국어 주격조사 */
 function subjectParticle(name) {
   const code = name.charCodeAt(name.length - 1);
   if (code < 0xAC00 || code > 0xD7A3) return '이';
@@ -106,7 +236,53 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.LIKED_POSTS, JSON.stringify([]));
   }
   updateLockState();
+
+  // 연필 채움 대상 버튼 — 글자를 span으로 감싸 스트로크 위에 표시
+  ['btn-start-intro', 'btn-next-mood', 'btn-next-situation', 'btn-submit-answer', 'btn-restart'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.innerHTML = `<span class="btn-label">${b.innerHTML}</span>`;
+  });
+
+  // 모든 옵션 카드에 손그림 체크 SVG 주입 (선택 시 스트로크 드로우)
+  document.querySelectorAll('.option-card').forEach(card => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'card-check');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.innerHTML = '<path d="M4 13 L10 19 L20 5" pathLength="1"/>';
+    card.appendChild(svg);
+  });
 });
+
+// ─────────────────────────────────────────
+// 상태 리셋
+// ─────────────────────────────────────────
+function resetState() {
+  state.mood              = null;
+  state.theme             = '일';
+  state.situation         = null;
+  state.mindset           = null;
+  state.philosopher       = null;
+  state.generatedQuestion = null;
+  state.userAnswer        = '';
+  state.shareConsent      = false;
+
+  document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+
+  // 상황 패널 초기화 (일 패널로)
+  document.querySelectorAll('#step-situation .tab-panel').forEach((p, i) => p.classList.toggle('active', i === 0));
+
+  if (btnNextMood)       btnNextMood.disabled      = true;
+  if (btnNextSituation)  btnNextSituation.disabled = true;
+  if (situationCustom)   situationCustom.value      = '';
+  if (userAnswerInput)   userAnswerInput.value      = '';
+  if (answerCharCurrent) answerCharCurrent.textContent = '0';
+  if (shareConsentCheckbox) shareConsentCheckbox.checked = false;
+
+  // ai-question step 초기 상태 리셋
+  if (aiQuestionLoading)  aiQuestionLoading.classList.remove('hidden');
+  if (aiQuestionContent)  aiQuestionContent.classList.add('hidden');
+}
 
 // ─────────────────────────────────────────
 // 탭 및 잠금 제어
@@ -117,10 +293,7 @@ function switchTab(tabName) {
     return;
   }
   state.currentTab = tabName;
-
-  Object.keys(tabs).forEach(name => {
-    tabs[name].classList.toggle('active', name === tabName);
-  });
+  Object.keys(tabs).forEach(name => tabs[name].classList.toggle('active', name === tabName));
 
   if (tabName === 'ask') {
     tabBtnAsk.classList.add('active');
@@ -150,35 +323,21 @@ btnGoAsk.addEventListener('click',        () => switchTab('ask'));
 
 // 홈 버튼
 btnGlobalHome.addEventListener('click', () => {
-  questionInput.value = '';
-  charCurrent.textContent = '0';
-  shareConsentCheckbox.checked = false;
-  btnNextStep.disabled = true;
-  state.question    = '';
-  state.philosopher = null;
-  state.shareConsent = false;
+  resetState();
   if (state.currentTab !== 'ask') switchTab('ask');
   showStep('intro');
 });
 
-// 관리자 인증 (서버에서 검증 — 클라이언트에서 비밀번호 하드코딩 금지)
+// 관리자 인증
 if (btnAdminAuth) {
   btnAdminAuth.addEventListener('click', async () => {
     const pw = prompt('관리자 비밀번호를 입력하십시오:');
     if (!pw) return;
-
-    // 임시 포스트로 서버 검증 (DELETE 403이면 실패)
     const testRes = await fetch('/api/posts/__auth_check__', {
       method: 'DELETE',
       headers: { 'x-admin-password': pw }
     });
-
-    if (testRes.status === 403) {
-      alert('비밀번호가 올바르지 않습니다.');
-      return;
-    }
-
-    // 404(포스트 없음) or 200 → 인증 성공
+    if (testRes.status === 403) { alert('비밀번호가 올바르지 않습니다.'); return; }
     state.isAdmin = true;
     state.adminPassword = pw;
     alert('관리자 권한이 인증되었습니다.');
@@ -189,147 +348,274 @@ if (btnAdminAuth) {
 // ─────────────────────────────────────────
 // 스텝 전환
 // ─────────────────────────────────────────
+const STEP_ORDER    = { intro: 0, name: 0.5, mood: 1, theme: 2, situation: 2, mindset: 3, aiQuestion: 4, answer: 5 };
+const STEP_PROGRESS = { mood: { from: 0, to: 33 }, theme: { from: 33, to: 66 }, situation: { from: 33, to: 66 }, mindset: { from: 66, to: 100 } };
+let currentStepName    = 'intro';
+let stepTransitioning  = false;
+
+function animateProgress(name) {
+  const prog = STEP_PROGRESS[name];
+  if (!prog) return;
+  const bar = steps[name].querySelector('.step-progress-bar');
+  if (!bar) return;
+
+  if (PREFERS_REDUCED) {
+    bar.style.width = prog.to + '%';
+    return;
+  }
+  bar.style.transition = 'none';
+  bar.style.width = prog.from + '%';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    bar.style.transition = '';
+    bar.style.width = prog.to + '%';
+  }));
+}
+
 function showStep(name) {
-  Object.values(steps).forEach(el => el.classList.remove('active'));
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
+  if (stepTransitioning) return;
 
-  if (name === 'intro') {
-    document.body.style.overflow = 'hidden';
-    document.body.style.height   = '100vh';
-  } else {
-    document.body.style.overflow = '';
-    document.body.style.height   = '';
+  const prev = currentStepName;
+  const prevEl = steps[prev];
+
+  const finishEnter = (enterClass) => {
+    Object.values(steps).forEach(el =>
+      el.classList.remove('active', 'leaving-fwd', 'leaving-back', 'enter-fwd', 'enter-back'));
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
+    if (name === 'intro') {
+      document.body.style.overflow = 'hidden';
+      document.body.style.height   = '100vh';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.height   = '';
+    }
+
+    steps[name].classList.add('active');
+    if (enterClass) steps[name].classList.add(enterClass);
+
+    if (name !== 'answer') resetPillarParallax();
+    animateProgress(name);
+  };
+
+  currentStepName = name;
+
+  // 인트로 진출입, 답변 화면(비디오 트랜지션이 덮음), 동일 스텝 재진입은 퇴장 생략
+  const skipExit = PREFERS_REDUCED || prev === name || prev === 'intro' || name === 'intro' ||
+                   prev === 'name' || name === 'answer' || !prevEl || !prevEl.classList.contains('active');
+
+  if (skipExit) {
+    finishEnter(name === 'answer' || name === 'intro' ? null : 'enter-fwd');
+    return;
   }
 
-  steps[name].classList.add('active');
+  const fwd = (STEP_ORDER[name] ?? 0) > (STEP_ORDER[prev] ?? 0);
+  stepTransitioning = true;
+  prevEl.classList.add(fwd ? 'leaving-fwd' : 'leaving-back');
 
-  if (name === 'philosopher') {
-    initPencilInteraction();
-  } else {
-    clearPencilHint();
-  }
-
-  // answer 스텝이 아닐 때 기둥 패럴랙스 초기화
-  if (name !== 'answer') {
-    resetPillarParallax();
-  }
+  setTimeout(() => {
+    stepTransitioning = false;
+    finishEnter(fwd ? 'enter-fwd' : 'enter-back');
+  }, 220);
 }
 
 // ─────────────────────────────────────────
 // STEP 0: 인트로
 // ─────────────────────────────────────────
 if (btnStartIntro) {
-  btnStartIntro.addEventListener('click', () => showStep('question'));
+  btnStartIntro.addEventListener('click', () => pencilAction(btnStartIntro, () => showStep('name')));
 }
 
 // ─────────────────────────────────────────
-// STEP 1: 질문 입력
+// STEP 0.5: 닉네임 입력
 // ─────────────────────────────────────────
-questionInput.addEventListener('input', () => {
-  charCurrent.textContent = questionInput.value.length;
-  btnNextStep.disabled    = questionInput.value.trim().length < 5;
+if (nameInput) {
+  nameInput.addEventListener('input', () => {
+    btnNameNext.disabled = nameInput.value.trim().length === 0;
+  });
+}
+
+if (btnNameNext) {
+  btnNameNext.addEventListener('click', () => {
+    state.userName = nameInput ? nameInput.value.trim() : '';
+    showStep('mood');
+  });
+}
+
+if (btnNameSkip) {
+  btnNameSkip.addEventListener('click', () => {
+    state.userName = '';
+    showStep('mood');
+  });
+}
+
+// ─────────────────────────────────────────
+// STEP 1: 기분 선택
+// ─────────────────────────────────────────
+document.querySelectorAll('#mood-options .option-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('#mood-options .option-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.mood = card.dataset.value;
+    btnNextMood.disabled = false;
+  });
 });
 
-btnNextStep.addEventListener('click', () => {
-  state.question      = questionInput.value.trim();
-  state.shareConsent  = shareConsentCheckbox.checked;
-  state.philosopher   = null;
-  showStep('philosopher');
+btnNextMood.addEventListener('click', () => pencilAction(btnNextMood, () => showStep('theme')));
+btnBackMood.addEventListener('click', () => showStep('mood'));
+
+// ─────────────────────────────────────────
+// STEP 2a: 주제 선택
+// ─────────────────────────────────────────
+const situationTitle  = document.getElementById('situation-title');
+const situationCustom = document.getElementById('situation-custom');
+const THEME_TITLE = {
+  일:      '일에 대해\n요즘 어떠세요?',
+  미래:    '미래에 대해\n요즘 어떠세요?',
+  인간관계: '인간관계에서\n요즘 어떠세요?'
+};
+
+document.querySelectorAll('.theme-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const theme = card.dataset.theme;
+    state.theme = theme;
+    state.situation = null;
+    // 해당 주제 패널만 표시
+    document.querySelectorAll('#step-situation .tab-panel').forEach(p => {
+      p.classList.toggle('active', p.dataset.panel === theme);
+    });
+    // 상황 선택 초기화
+    document.querySelectorAll('#step-situation .option-card').forEach(c => c.classList.remove('selected'));
+    if (situationCustom) situationCustom.value = '';
+    btnNextSituation.disabled = true;
+    // 제목 업데이트
+    if (situationTitle) situationTitle.textContent = THEME_TITLE[theme] || '요즘 어떠세요?';
+    showStep('situation');
+  });
 });
 
 // ─────────────────────────────────────────
-// STEP 2: 연필 드래그 선택
+// STEP 2b: 상황 선택
 // ─────────────────────────────────────────
-btnBackQuestion.addEventListener('click', () => showStep('question'));
-
-const PULL_THRESHOLD = 80; // px — 이 이상 당기면 선택 확정
-
-let activePencilEl   = null;
-let pencilDragStartX = 0;
-let isPencilDragging = false;
-let pencilHintTimer  = null;
-
-/* 연필 스택 진입 시 초기화 & 페이드인 애니메이션 */
-function initPencilInteraction() {
-  // 모든 연필 화면 왼쪽 바깥으로 즉시 리셋
-  pencilItems.forEach(item => {
-    item.style.transition = 'none';
-    item.style.transform  = 'translateX(-110vw)';
-    item.style.opacity    = '1';
-    item.classList.remove('dragging', 'hint-wiggle');
+document.querySelectorAll('#step-situation .option-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('#step-situation .option-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.situation = card.dataset.value;
+    if (situationCustom) situationCustom.value = '';
+    btnNextSituation.disabled = false;
   });
+});
 
-  // 스태거 슬라이드인 (왼쪽→오른쪽, 차례대로)
-  pencilItems.forEach((item, i) => {
-    setTimeout(() => {
-      item.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)';
-      item.style.transform  = 'translateX(0)';
-    }, 60 + i * 100);
-  });
-
-  // 힌트 바 복원
-  if (pencilHintBar) {
-    pencilHintBar.style.opacity       = '1';
-    pencilHintBar.style.pointerEvents = '';
-  }
-
-  // 2초 후 중간 연필(아리스토텔레스) 힌트 흔들기
-  if (pencilHintTimer) clearTimeout(pencilHintTimer);
-  pencilHintTimer = setTimeout(() => {
-    const target = pencilItems[2];
-    if (target && !isPencilDragging) {
-      // 힌트 실행 중에는 transition 없애야 CSS animation이 동작
-      target.style.transition = '';
-      target.style.transform  = '';
-      target.classList.add('hint-wiggle');
-      target.addEventListener('animationend', () => {
-        target.classList.remove('hint-wiggle');
-      }, { once: true });
+if (situationCustom) {
+  situationCustom.addEventListener('input', () => {
+    const val = situationCustom.value.trim();
+    if (val) {
+      document.querySelectorAll('#step-situation .option-card').forEach(c => c.classList.remove('selected'));
+      state.situation = val;
+      btnNextSituation.disabled = false;
+    } else {
+      state.situation = null;
+      btnNextSituation.disabled = true;
     }
-  }, 2000);
-}
-
-/* 힌트 타이머 정리 & 힌트 바 페이드아웃 */
-function clearPencilHint() {
-  if (pencilHintTimer) {
-    clearTimeout(pencilHintTimer);
-    pencilHintTimer = null;
-  }
-  if (pencilHintBar) {
-    pencilHintBar.style.opacity       = '0';
-    pencilHintBar.style.pointerEvents = 'none';
-  }
-}
-
-/* 철학자 선택 확정: 선택된 연필은 유지, 나머지는 왼쪽으로 슬라이드아웃 */
-function selectPhilosopher(philosopher, pencilEl) {
-  clearPencilHint();
-
-  const others = [...pencilItems].filter(item => item !== pencilEl);
-  others.forEach((item, i) => {
-    setTimeout(() => {
-      item.style.transition = 'transform 0.35s cubic-bezier(0.55, 0, 0.8, 1)';
-      item.style.transform  = 'translateX(-110vw)';
-    }, i * 60);
   });
-
-  const delay = 60 * (others.length - 1) + 350;
-  setTimeout(() => {
-    state.philosopher = philosopher;
-    playTransitionIn();
-  }, delay);
 }
 
-/* ─── 전환 영상 제어 ─── */
+btnNextSituation.addEventListener('click', () => pencilAction(btnNextSituation, () => showStep('mindset')));
+if (btnBackTheme) btnBackTheme.addEventListener('click', () => showStep('theme'));
 
+// ─────────────────────────────────────────
+// STEP 3: 사고방식 선택 → 철학자 결정 + AI 질문 생성
+// ─────────────────────────────────────────
+document.querySelectorAll('#mindset-options .option-card').forEach(card => {
+  card.addEventListener('click', async () => {
+    document.querySelectorAll('#mindset-options .option-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+
+    state.mindset    = card.dataset.value;
+    state.philosopher = card.dataset.philosopher;
+
+    // AI 질문 생성 단계로 이동 (로딩 상태)
+    aiQuestionLoading.classList.remove('hidden');
+    aiQuestionContent.classList.add('hidden');
+    showStep('aiQuestion');
+
+    // 로더 깜빡임 방지 — 최소 노출 시간 보장
+    const minWait = PREFERS_REDUCED ? Promise.resolve() : delay(700);
+
+    try {
+      const fetchPromise = fetch('/api/generate-question', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mood:      state.mood,
+          theme:     state.theme,
+          situation: state.situation,
+          mindset:   state.mindset
+        })
+      });
+      const [res] = await Promise.all([fetchPromise, minWait]);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '질문 생성 실패');
+
+      revealAiQuestion(data.question);
+    } catch (err) {
+      await minWait;
+      revealAiQuestion('지금 이 순간, 가장 솔직하게 느끼는 감정은 무엇인가요?');
+    }
+  });
+});
+
+// 질문을 단어 단위 "잉크 번짐"으로 공개
+function revealAiQuestion(question) {
+  state.generatedQuestion = question;
+  aiQuestionText.innerHTML = question
+    .split(' ')
+    .filter(w => w)
+    .map((w, i) => `<span class="q-word" style="animation-delay:${300 + i * 90}ms">${escapeHTML(w)}</span>`)
+    .join(' ');
+
+  aiQuestionLoading.classList.add('hidden');
+  aiQuestionContent.classList.remove('hidden');
+}
+
+btnBackMindset.addEventListener('click', () => {
+  state.generatedQuestion = null;
+  aiQuestionLoading.classList.remove('hidden');
+  aiQuestionContent.classList.add('hidden');
+  showStep('mindset');
+});
+
+// ─────────────────────────────────────────
+// STEP 4: 짧은 답변 + 제출
+// ─────────────────────────────────────────
+if (userAnswerInput) {
+  userAnswerInput.addEventListener('input', () => {
+    answerCharCurrent.textContent = userAnswerInput.value.length;
+  });
+}
+
+if (shareConsentCheckbox) {
+  shareConsentCheckbox.addEventListener('change', () => {
+    state.shareConsent = shareConsentCheckbox.checked;
+  });
+}
+
+btnSubmitAnswer.addEventListener('click', () => {
+  state.userAnswer   = userAnswerInput ? userAnswerInput.value.trim() : '';
+  state.shareConsent = shareConsentCheckbox ? shareConsentCheckbox.checked : false;
+  pencilAction(btnSubmitAnswer, () => playTransitionIn());
+});
+
+// ─────────────────────────────────────────
+// 전환 영상 제어
+// ─────────────────────────────────────────
 function hideVideoTransition(cb) {
   transitionVideoIn.classList.remove('visible');
   transitionVideoOut.classList.remove('visible');
   videoTransition.classList.remove('fade-in');
   setTimeout(() => {
     videoTransition.classList.add('hidden');
-    // 다음 전환을 위해 src 초기화
     transitionVideoIn.src  = '';
     transitionVideoOut.src = '';
     if (cb) cb();
@@ -341,14 +627,12 @@ function playTransitionIn() {
   const particle = subjectParticle(meta.ko);
   transitionLoadingSentence.innerHTML = `${meta.ko}${particle}<br>생각 중입니다`;
 
-  // 초기 상태 리셋
   transitionVideoIn.classList.remove('visible');
   transitionVideoOut.classList.remove('visible');
   transitionLoading.classList.remove('visible');
   videoTransition.classList.remove('hidden');
 
-  // API 호출을 즉시 병렬로 시작
-  const apiPromise = fetchAnswerData(state.question, state.philosopher, state.shareConsent);
+  const apiPromise = fetchAnswerData();
   let apiResult  = null;
   let videoEnded = false;
 
@@ -357,18 +641,15 @@ function playTransitionIn() {
     if (videoEnded) playTransitionOut(result);
   });
 
-  // ① 현재 화면 → 흰색으로 페이드인 (0.2s)
   requestAnimationFrame(() => requestAnimationFrame(() => {
     videoTransition.classList.add('fade-in');
   }));
 
-  // ② 흰 화면 위로 in.mp4 페이드인 (0.2s 후)
   setTimeout(() => {
     transitionVideoIn.src = '/videos/In.mp4';
     transitionVideoIn.load();
     transitionVideoIn.play().then(() => {
       transitionVideoIn.classList.add('visible');
-      // in.mp4 재생 시작과 동시에 out.mp4 백그라운드 버퍼링
       transitionVideoOut.src = '/videos/out.mp4';
       transitionVideoOut.load();
     }).catch(() => {
@@ -381,138 +662,56 @@ function playTransitionIn() {
     if (apiResult !== null) {
       playTransitionOut(apiResult);
     } else {
-      // API 대기 중 → 마지막 프레임 위에 로딩 메시지 표시
       transitionLoading.classList.add('visible');
     }
   };
 }
 
 function playTransitionOut(result) {
-  // 로딩 메시지 페이드아웃
   transitionLoading.classList.remove('visible');
 
   setTimeout(() => {
-    // out.mp4는 이미 버퍼링됨 — src 교체 없이 바로 재생
     transitionVideoOut.play().then(() => {
       transitionVideoOut.classList.add('visible');
-      // in.mp4 마지막 프레임 페이드아웃 (out.mp4가 위에 올라오는 동안)
       transitionVideoIn.classList.remove('visible');
     }).catch(() => {
       hideVideoTransition(() => showAnswerWithResult(result));
     });
 
     transitionVideoOut.onended = () => {
-      // 오버레이가 아직 덮고 있는 동안 답변 화면을 먼저 준비
       showAnswerWithResult(result);
       hideVideoTransition();
     };
   }, 200);
 }
 
-/* 드래그 이벤트 — 각 연필 아이템 */
-pencilItems.forEach(item => {
-  // 터치 시작
-  item.addEventListener('touchstart', e => {
-    activePencilEl   = item;
-    pencilDragStartX = e.touches[0].clientX;
-    isPencilDragging = true;
-    item.classList.add('dragging');
-    item.style.transition = 'none';
-    clearPencilHint();
-  }, { passive: true });
-
-  // 마우스 다운
-  item.addEventListener('mousedown', e => {
-    activePencilEl   = item;
-    pencilDragStartX = e.clientX;
-    isPencilDragging = true;
-    item.classList.add('dragging');
-    item.style.transition = 'none';
-    clearPencilHint();
-    e.preventDefault(); // 텍스트 선택 방지
-  });
-});
-
-/* 드래그 이동 — window에서 캡처 */
-window.addEventListener('touchmove', e => {
-  if (!isPencilDragging || !activePencilEl) return;
-  const deltaX = e.touches[0].clientX - pencilDragStartX;
-  if (deltaX > 0) {
-    // PULL_THRESHOLD 이후 저항감 (느리게 이동)
-    let tx = deltaX > PULL_THRESHOLD
-      ? PULL_THRESHOLD + (deltaX - PULL_THRESHOLD) * 0.35
-      : deltaX;
-    // 오른쪽 화면 끝(25vw)을 넘지 않도록 제한
-    const maxTx = window.innerWidth * 0.25;
-    tx = Math.min(tx, maxTx);
-    activePencilEl.style.transform = `translateX(${tx}px)`;
-  } else {
-    activePencilEl.style.transform = 'translateX(0)';
-  }
-}, { passive: true });
-
-window.addEventListener('mousemove', e => {
-  if (!isPencilDragging || !activePencilEl) return;
-  const deltaX = e.clientX - pencilDragStartX;
-  if (deltaX > 0) {
-    let tx = deltaX > PULL_THRESHOLD
-      ? PULL_THRESHOLD + (deltaX - PULL_THRESHOLD) * 0.35
-      : deltaX;
-    // 오른쪽 화면 끝(25vw)을 넘지 않도록 제한
-    const maxTx = window.innerWidth * 0.25;
-    tx = Math.min(tx, maxTx);
-    activePencilEl.style.transform = `translateX(${tx}px)`;
-  } else {
-    activePencilEl.style.transform = 'translateX(0)';
-  }
-});
-
-/* 드래그 종료 처리 */
-function releasePencil(clientX) {
-  if (!isPencilDragging || !activePencilEl) return;
-  isPencilDragging = false;
-  activePencilEl.classList.remove('dragging');
-
-  const deltaX     = clientX - pencilDragStartX;
-  const philosopher = activePencilEl.dataset.philosopher;
-  const el          = activePencilEl;
-  activePencilEl    = null;
-  pencilDragStartX  = 0;
-
-  if (deltaX >= PULL_THRESHOLD) {
-    // 선택 확정
-    selectPhilosopher(philosopher, el);
-  } else {
-    // 스냅백
-    el.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
-    el.style.transform  = 'translateX(0)';
-    setTimeout(() => { el.style.transition = ''; }, 400);
-  }
-}
-
-window.addEventListener('touchend', e => releasePencil(e.changedTouches[0].clientX));
-window.addEventListener('mouseup',  e => releasePencil(e.clientX));
-
 // ─────────────────────────────────────────
-// STEP 3: 답변 로드
+// API 호출 및 답변 화면 구성
 // ─────────────────────────────────────────
-
-/* API만 호출해서 결과 객체를 반환 (화면 조작 없음) */
-async function fetchAnswerData(question, philosopher, shareConsent) {
+async function fetchAnswerData() {
   try {
     const res  = await fetch('/api/ask', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ question, philosopher, shareConsent })
+      body:    JSON.stringify({
+        mood:              state.mood,
+        theme:             state.theme,
+        situation:         state.situation,
+        mindset:           state.mindset,
+        philosopher:       state.philosopher,
+        generatedQuestion: state.generatedQuestion,
+        userAnswer:        state.userAnswer,
+        shareConsent:      state.shareConsent,
+        userName:          state.userName
+      })
     });
     const data = await res.json();
-    return { ok: res.ok, data, shareConsent };
+    return { ok: res.ok, data, shareConsent: state.shareConsent };
   } catch (err) {
-    return { ok: false, data: { error: '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.' }, shareConsent };
+    return { ok: false, data: { error: '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.' }, shareConsent: state.shareConsent };
   }
 }
 
-/* 결과를 받아 답변 화면을 구성하고 표시 */
 function showAnswerWithResult({ ok, data, shareConsent }) {
   const meta = philosopherMeta[state.philosopher];
 
@@ -522,12 +721,16 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
   answerPhilosopherKo.textContent   = meta.ko;
   doctrineGreek.textContent         = meta.docGreek;
   doctrineEn.textContent            = meta.docEn;
-  recapQuestion.textContent         = state.question;
 
-  // 초기화 (애니메이션 리셋 포함)
+  const recapText = state.generatedQuestion +
+    (state.userAnswer ? `\n\n→ ${state.userAnswer}` : '');
+  recapQuestion.textContent = recapText;
+
   const headerWrapper = document.querySelector('.answer-header-wrapper');
+  const recapBox      = document.querySelector('.question-recap');
   headerWrapper.classList.remove('anim-in');
-  void headerWrapper.offsetWidth; // reflow로 애니메이션 재시작 보장
+  recapBox.classList.remove('anim-in');
+  void headerWrapper.offsetWidth;
 
   answerLoading.classList.add('hidden');
   answerContent.classList.add('hidden');
@@ -539,9 +742,9 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
 
   showStep('answer');
 
-  // B1: 아바타 + 이름 슬라이드업
   requestAnimationFrame(() => {
     headerWrapper.classList.add('anim-in');
+    recapBox.classList.add('anim-in');
   });
 
   if (!ok) {
@@ -556,11 +759,9 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
     return;
   }
 
-  // A2 + B1: 아바타 안착 후 텍스트 블록 슬라이드업 + 단어 순차 페이드인
-  const AVATAR_DELAY = 420; // ms — 아바타 애니메이션(600ms)의 70% 지점에서 텍스트 시작
-  const WORD_DELAY   = 32;  // ms — 단어 간 딜레이
+  const AVATAR_DELAY = 420;
+  const WORD_DELAY   = 32;
 
-  // **텍스트** → { word, bold } 토큰 배열로 파싱
   function parseAnswerTokens(text) {
     const tokens = [];
     const boldRegex = /\*\*(.+?)\*\*/g;
@@ -583,13 +784,12 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
     const tokens = parseAnswerTokens(data.answer);
     answerText.innerHTML = tokens
       .map((t, i) => {
-        const safe = escapeHTML(t.word);
+        const safe  = escapeHTML(t.word);
         const inner = t.bold ? `<strong>${safe}</strong>` : safe;
         return `<span class="answer-word" style="animation-delay:${i * WORD_DELAY}ms">${inner}</span>`;
       })
       .join(' ');
 
-    // 텍스트 블록 슬라이드업 (opacity:0으로 먼저 표시 후 애니메이션 트리거)
     answerContent.style.opacity = '0';
     answerContent.classList.remove('hidden');
     requestAnimationFrame(() => {
@@ -603,7 +803,6 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
       updateLockState();
     }
 
-    // 액션 버튼: 마지막 단어 완료 시점 or 최대 2.5초 후 페이드인
     const actionDelay = Math.min(tokens.length * WORD_DELAY + 400, 2500);
     setTimeout(() => {
       answerActions.style.opacity = '0';
@@ -617,22 +816,19 @@ function showAnswerWithResult({ ok, data, shareConsent }) {
 }
 
 // ─────────────────────────────────────────
-// 답변 화면 액션 버튼
+// 답변 화면 액션
 // ─────────────────────────────────────────
-btnBackPhilosopher.addEventListener('click', () => showStep('philosopher'));
-
 btnRestart.addEventListener('click', () => {
-  questionInput.value = '';
-  charCurrent.textContent = '0';
-  shareConsentCheckbox.checked = false;
-  btnNextStep.disabled = true;
-  state.question    = '';
-  state.philosopher = null;
-  state.shareConsent = false;
-  showStep('question');
+  pencilAction(btnRestart, () => {
+    resetState();
+    showStep('mood');
+  });
 });
 
-btnTryOther.addEventListener('click', () => showStep('philosopher'));
+btnBackPhilosopher.addEventListener('click', () => {
+  resetState();
+  showStep('intro');
+});
 
 // ─────────────────────────────────────────
 // 커뮤니티 데이터 조회 및 렌더링
@@ -663,7 +859,6 @@ async function loadCommunityPosts() {
 
     const res   = await fetch(`/api/posts?sortBy=${state.postsSortBy}`);
     const posts = await res.json();
-
     if (!res.ok) throw new Error(posts.error || '커뮤니티 목록을 불러오지 못했습니다.');
 
     if (posts.length === 0) {
@@ -680,10 +875,16 @@ async function loadCommunityPosts() {
     communityPostsList.innerHTML = '';
 
     posts.forEach(post => {
-      const isLiked  = likedPosts.includes(post.id);
-      const meta     = philosopherMeta[post.philosopher] || { ko: post.philosopher, en: '', avatar: '/images/epicurus@2x.png' };
+      const isLiked   = likedPosts.includes(post.id);
+      const meta      = philosopherMeta[post.philosopher] || { ko: post.philosopher, en: '', avatar: '/images/epicurus.png' };
       const deleteBtn = state.isAdmin
         ? `<button class="btn-delete-post" data-id="${post.id}">🗑️ 삭제</button>` : '';
+
+      const arrowIdx = post.question.indexOf('\n\n→ ');
+      const philoQ = arrowIdx >= 0 ? post.question.slice(0, arrowIdx).trim() : post.question.trim();
+      const userAns = arrowIdx >= 0 ? post.question.slice(arrowIdx + 4).trim() : '';
+      const firstSentence = philoQ.split(/[.!?\n]/)[0].trim();
+      const titleText = firstSentence.length > 28 ? firstSentence.slice(0, 28) + '…' : firstSentence;
 
       const card = document.createElement('div');
       card.className = 'post-card';
@@ -691,16 +892,26 @@ async function loadCommunityPosts() {
         <div class="post-header">
           <div class="post-philosopher-avatar"><img src="${meta.avatar}" alt="${meta.ko}" /></div>
           <div class="post-meta">
-            <span class="post-philo-name">${meta.ko}의 시선</span>
+            <span class="post-title">${escapeHTML(titleText)}</span>
             <span class="post-date">${formatRelativeTime(post.createdAt)}</span>
           </div>
           ${deleteBtn}
         </div>
-        <div class="post-question-container">
-          <div class="post-question">" ${escapeHTML(post.question)} "</div>
-          <div class="accordion-bar"><span class="accordion-toggle">답변 보기 ▾</span></div>
+        <div class="post-body">
+          <div class="post-section">
+            <div class="post-section-label">${meta.ko}의 시선</div>
+            <div class="post-question">" ${escapeHTML(philoQ)} "</div>
+          </div>
+          ${userAns ? `
+          <div class="post-section post-section--answer">
+            <div class="post-section-label">${post.userName ? escapeHTML(post.userName) + '의 답변' : '답변'}</div>
+            <div class="post-user-answer">${escapeHTML(userAns)}</div>
+          </div>` : ''}
         </div>
-        <div class="post-answer">${escapeHTML(post.answer)}</div>
+        <div class="post-philo-answer-container">
+          <div class="accordion-bar"><span class="accordion-toggle">${meta.ko}의 답변 ▾</span></div>
+          <div class="post-answer">${escapeHTML(post.answer)}</div>
+        </div>
         <div class="post-footer">
           <button class="like-btn ${isLiked ? 'liked' : ''}" data-id="${post.id}">
             <span class="heart-icon">${isLiked ? '❤️' : '🤍'}</span>
@@ -708,14 +919,12 @@ async function loadCommunityPosts() {
           </button>
         </div>`;
 
-      // 아코디언
       const toggleSpan = card.querySelector('.accordion-toggle');
-      card.querySelector('.post-question-container').addEventListener('click', () => {
+      card.querySelector('.post-philo-answer-container').addEventListener('click', () => {
         card.classList.toggle('open');
-        toggleSpan.textContent = card.classList.contains('open') ? '답변 닫기 ▴' : '답변 보기 ▾';
+        toggleSpan.textContent = card.classList.contains('open') ? `${meta.ko}의 답변 ▴` : `${meta.ko}의 답변 ▾`;
       });
 
-      // 관리자 삭제
       if (state.isAdmin) {
         const btn = card.querySelector('.btn-delete-post');
         if (btn) btn.addEventListener('click', e => {
@@ -724,7 +933,6 @@ async function loadCommunityPosts() {
         });
       }
 
-      // 공감
       card.querySelector('.like-btn').addEventListener('click', function() {
         handleLikeClick(this, post.id);
       });
@@ -752,8 +960,8 @@ async function handleLikeClick(btn, postId) {
     likedPosts.push(postId);
     localStorage.setItem(LOCAL_STORAGE_KEYS.LIKED_POSTS, JSON.stringify(likedPosts));
     btn.classList.add('liked');
-    btn.querySelector('.heart-icon').textContent  = '❤️';
-    btn.querySelector('.like-count').textContent  = data.likes;
+    btn.querySelector('.heart-icon').textContent = '❤️';
+    btn.querySelector('.like-count').textContent = data.likes;
   } catch (err) {
     console.error('좋아요 실패:', err);
     alert('공감 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.');
@@ -816,13 +1024,12 @@ const pillarRightImg = document.querySelector('.side-pillar--right img');
 function updatePillarParallax() {
   if (!steps.answer.classList.contains('active')) return;
 
-  const scrollY   = window.scrollY || document.documentElement.scrollTop;
-  const pillarEl  = document.querySelector('.side-pillar');
-  const pillarH   = pillarEl ? pillarEl.offsetHeight : window.innerHeight;
-  const extraH    = pillarH * 0.20; // img height: 120% → 20% 여유
-  const factor    = 0.35;           // 패럴랙스 속도 (1 = 스크롤 동일 속도)
+  const scrollY  = window.scrollY || document.documentElement.scrollTop;
+  const pillarEl = document.querySelector('.side-pillar');
+  const pillarH  = pillarEl ? pillarEl.offsetHeight : window.innerHeight;
+  const extraH   = pillarH * 0.20;
+  const factor   = 0.35;
 
-  // 아래로 스크롤 → 기둥 위로 이동 (음수), 이미지 끝 초과 방지
   let ty = -(scrollY * factor);
   ty = Math.max(-extraH, Math.min(0, ty));
 

@@ -143,29 +143,80 @@ const PHILOSOPHER_PROMPTS = {
 // API 라우트
 // ─────────────────────────────────────────
 
+app.post('/api/generate-question', async (req, res) => {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress;
+  if (!checkRateLimit(ip, 10, 60000)) {
+    return res.status(429).json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' });
+  }
+
+  const { mood, theme, situation, mindset } = req.body;
+
+  if (!mood || !theme || !situation || !mindset) {
+    return res.status(400).json({ error: '필수 항목이 누락되었습니다.' });
+  }
+
+  if ([mood, theme, situation, mindset].some(v => typeof v !== 'string' || v.length > 200)) {
+    return res.status(400).json({ error: '잘못된 입력 형식입니다.' });
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    const prompt = `다음은 한 사람의 지금 상태입니다:
+- 오늘 기분: ${mood}
+- 고민 영역: ${theme}
+- 요즘 상황: ${situation}
+- 상황을 바라보는 생각: ${mindset}
+
+이 사람에게 지금 이 순간 가장 적절한 질문 하나를 한국어로 만들어주세요.
+
+조건:
+- 질문 문장 하나만 출력할 것 (다른 설명이나 부연 없이)
+- 40자 이내의 짧고 핵심적인 질문
+- 철학 용어 없이 일상 언어로
+- 스스로를 돌아볼 수 있도록 유도하는 질문
+- 물음표(?)로 끝날 것`;
+
+    const result = await model.generateContent(prompt);
+    const question = result.response.text().trim().replace(/^["'「『]|["'」』]$/g, '');
+
+    if (!question) {
+      return res.status(500).json({ error: '질문 생성에 실패했습니다.' });
+    }
+
+    res.json({ question });
+  } catch (error) {
+    console.error('generate-question 오류:', error);
+    res.status(500).json({ error: '질문 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' });
+  }
+});
+
 app.post('/api/ask', async (req, res) => {
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress;
   if (!checkRateLimit(ip, 10, 60000)) {
     return res.status(429).json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' });
   }
 
-  const { question, philosopher, shareConsent } = req.body;
+  const { mood, theme, situation, mindset, philosopher, generatedQuestion, userAnswer, shareConsent, userName } = req.body;
 
-  // 유효성 검사
-  if (!question || !philosopher) {
-    return res.status(400).json({ error: '질문과 철학자를 선택해주세요.' });
+  if (!philosopher || !generatedQuestion) {
+    return res.status(400).json({ error: '필수 항목이 누락되었습니다.' });
   }
 
-  if (typeof question !== 'string' || question.length > 500) {
-    return res.status(400).json({ error: '질문은 500자를 초과할 수 없습니다.' });
+  if (typeof generatedQuestion !== 'string' || generatedQuestion.length > 200) {
+    return res.status(400).json({ error: '질문이 너무 깁니다.' });
+  }
+
+  if (userAnswer !== undefined && (typeof userAnswer !== 'string' || userAnswer.length > 200)) {
+    return res.status(400).json({ error: '답변이 너무 깁니다.' });
   }
 
   if (!PHILOSOPHER_PROMPTS[philosopher]) {
     return res.status(400).json({ error: '유효하지 않은 철학자입니다.' });
   }
 
-  // 캐시 확인
-  const cached = findCachedAnswer(question, philosopher);
+  const questionKey = `${generatedQuestion}:${userAnswer || ''}`;
+  const cached = findCachedAnswer(questionKey, philosopher);
   let answer;
 
   if (cached) {
@@ -181,30 +232,49 @@ app.post('/api/ask', async (req, res) => {
         systemInstruction: PHILOSOPHER_PROMPTS[philosopher]
       });
 
-      const prompt = `다음은 고민 상담 내용입니다:\n\n"${question}"\n\n이 고민에 대해 당신의 철학적 관점으로 조언해주세요.\n\n[답변 형식 지침]:\n- 절대 이모티콘이나 이모지를 쓰지 마세요.\n- 답변에서 가장 핵심이 되는 조언 구절 1~2개에만 **볼드체**를 사용하세요. 이탤릭체나 다른 마크다운은 쓰지 마세요.\n- 현자가 타이르듯 구어체(~라네, ~일세, ~한다네)로 친근하게 답변하세요.`;
+      const contextParts = [
+        mood      && `오늘 기분: ${mood}`,
+        theme     && `고민 영역: ${theme}`,
+        situation && `요즘 상황: ${situation}`,
+        mindset   && `상황을 바라보는 생각: ${mindset}`,
+      ].filter(Boolean);
+
+      const userAddress = (typeof userName === 'string' && userName.trim()) ? userName.trim() : null;
+      const prompt = `다음은 한 사람의 지금 상태입니다:
+${contextParts.join('\n')}
+
+당신이 이 사람에게 던진 질문: "${generatedQuestion}"
+${userAnswer ? `이 사람의 답변: "${userAnswer}"` : '이 사람은 답변을 남기지 않았습니다.'}
+
+이 사람의 상황을 충분히 이해한 뒤, 당신의 철학적 관점으로 진심 어린 조언을 건네주세요.${userAddress ? `\n\n[중요] 답변 안에서 반드시 한 번, 자연스러운 맥락에 "${userAddress}"이라는 이름으로 직접 불러주세요. 예: "...${userAddress}, ..." 또는 "...${userAddress}이 말이야..." 형식으로.` : ''}
+
+[답변 형식 지침]:
+- 절대 이모티콘이나 이모지를 쓰지 마세요.
+- 답변에서 가장 핵심이 되는 조언 구절 1~2개에만 **볼드체**를 사용하세요. 이탤릭체나 다른 마크다운은 쓰지 마세요.
+- 현자가 타이르듯 구어체(~라네, ~일세, ~한다네)로 친근하게 답변하세요.`;
 
       const result = await model.generateContent(prompt);
       answer = result.response.text();
 
-      // 메모리 캐시에 추가
-      askCache.push({ question, philosopher, answer });
+      askCache.push({ question: questionKey, philosopher, answer });
     } catch (error) {
       console.error('Gemini API 오류:', error);
       return res.status(500).json({ error: 'AI 응답 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' });
     }
   }
 
-  // shareConsent가 true인 경우 posts.json(및 posts 메모리)에 저장
   if (shareConsent === true) {
+    const communityQuestion = generatedQuestion + (userAnswer ? `\n\n→ ${userAnswer}` : '');
     const isAlreadyShared = posts.some(
-      p => p.philosopher === philosopher && normalizeStr(p.question) === normalizeStr(question)
+      p => p.philosopher === philosopher && normalizeStr(p.question) === normalizeStr(communityQuestion)
     );
     if (!isAlreadyShared) {
       const newPost = {
         id: Date.now().toString(36) + Math.random().toString(36).substring(2, 7),
         philosopher,
-        question,
+        question: communityQuestion,
         answer,
+        userName: (typeof userName === 'string' && userName.trim()) ? userName.trim() : '',
         likes: 0,
         createdAt: new Date().toISOString()
       };
