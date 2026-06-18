@@ -237,6 +237,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   updateLockState();
 
+  // 구름 트랙마다 시작 위상 랜덤화 — 초반 "줄줄이" 동기화 방지
+  document.querySelectorAll('.cloud-track').forEach(track => {
+    const durSec = parseFloat(getComputedStyle(track).animationDuration) || 40;
+    track.style.animationDelay = `-${(Math.random() * durSec).toFixed(2)}s`;
+  });
+
   // 연필 채움 대상 버튼 — 글자를 span으로 감싸 스트로크 위에 표시
   ['btn-start-intro', 'btn-next-mood', 'btn-next-situation', 'btn-submit-answer', 'btn-restart'].forEach(id => {
     const b = document.getElementById(id);
@@ -422,8 +428,19 @@ function showStep(name) {
 // ─────────────────────────────────────────
 // STEP 0: 인트로
 // ─────────────────────────────────────────
+let introDiving = false;
 if (btnStartIntro) {
-  btnStartIntro.addEventListener('click', () => pencilAction(btnStartIntro, () => showStep('name')));
+  btnStartIntro.addEventListener('click', () => {
+    if (introDiving) return;
+    if (PREFERS_REDUCED) { showStep('name'); return; }
+    introDiving = true;
+    steps.intro.classList.add('diving');   // 구름 zoom-through + 흰 페이드
+    setTimeout(() => {
+      showStep('name');                    // 흰 화면 절정에서 다음 스텝으로
+      steps.intro.classList.remove('diving'); // 인트로 복귀 대비 리셋
+      introDiving = false;
+    }, 1000);
+  });
 }
 
 // ─────────────────────────────────────────
