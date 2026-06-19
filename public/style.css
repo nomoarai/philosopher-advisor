@@ -1744,12 +1744,17 @@ body:has(#step-intro.active) .btn-global-home {
   width: max-content;
   height: 100%;
   animation: cloudFlow linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .cloud-track img {
   height: 100%;
   width: auto;
   display: block;
+  /* 서브픽셀 렌더링 안정화 */
+  image-rendering: auto;
+  transform: translateZ(0);
 }
 
 @keyframes cloudFlow {
