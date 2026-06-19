@@ -1309,6 +1309,7 @@ textarea::placeholder {
   justify-content: space-around;
   align-items: center;
   z-index: 1000;
+  transition: opacity 0.5s ease;
 }
 
 .bottom-tab-bar::before {
@@ -1378,7 +1379,7 @@ textarea::placeholder {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 0;
-  transition: background-color var(--transition);
+  transition: opacity 0.5s ease, background-color var(--transition);
 }
 
 .btn-global-home img {
@@ -1625,19 +1626,8 @@ body:has(#tab-community.active) .side-pillar {
    ───────────────────────────────────────── */
 
 /* ─────────────────────────────────────────
-   step-name — 닉네임 입력 화면
+   이름 입력 (인트로 내 뷰)
    ───────────────────────────────────────── */
-.name-prompt-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 70vh;
-  gap: 20px;
-  text-align: center;
-  padding: 0 8px;
-}
-
 .name-question {
   font-family: var(--font-serif);
   font-size: 26px;
@@ -1794,7 +1784,7 @@ body:has(#step-intro.active) .btn-global-home {
 }
 .cloud-back .cloud-track { animation-duration: 60s; }
 
-/* ── 다이브 인터랙션: 구름 속으로 빨려드는 zoom-through ── */
+/* ── 다이브 전환: 이름 제출 시 구름 속으로 빨려드는 zoom-through + 흰 페이드 ── */
 /* 레이어 transform/filter는 트랙의 흐름(translateX)과 충돌 없이 합성됨 */
 .cloud-layer {
   transition: transform 1s cubic-bezier(0.66, 0, 0.86, 0.2),
@@ -1802,12 +1792,7 @@ body:has(#step-intro.active) .btn-global-home {
               opacity 0.9s ease-in;
 }
 
-.intro-main-box {
-  transition: transform 0.55s cubic-bezier(0.66, 0, 0.86, 0.2),
-              opacity 0.5s ease-in;
-}
-
-/* 흰 페이드 오버레이 — 모든 레이어 위 */
+/* 흰 페이드 오버레이 — 인트로 내 모든 레이어 위 */
 .intro-flash {
   position: absolute;
   inset: 0;
@@ -1818,47 +1803,100 @@ body:has(#step-intro.active) .btn-global-home {
   transition: opacity 0.45s ease-in 0.55s;
 }
 
-/* 다이브 발동: 구름 클립 해제 — 단 .intro-bg-layer(inset 16px)는 hidden 유지해
-   확대된 구름이 스트로크 프레임 안쪽에서 잘리게 함 */
+/* 전환 동안 비활성 인트로를 흰 배경 오버레이로 띄움(다이브 종료 후 다음 화면 드러남) */
+#step-intro.diving {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #ffffff;
+  pointer-events: none;
+}
+
+#step-intro.diving .intro-content-layer {
+  transition: transform 0.55s cubic-bezier(0.66, 0, 0.86, 0.2),
+              opacity 0.5s ease-in;
+}
+
+/* 풀프레임이라 화면 끝까지 확대되도록 클립 해제 */
 #step-intro.diving .intro-clouds,
 #step-intro.diving .cloud-layer {
   overflow: visible;
 }
 
-/* 깊이별 가중치: front(가까움)가 가장 크게 확대 + 가장 멀리 빠져나감 */
-#step-intro.diving .cloud-front {
+/* go: zoom-through 시작 — .diving-go가 붙는 다음 프레임부터 전환(rest→end).
+   깊이별 가중치: front(가까움)가 가장 크게 확대 + 가장 멀리 빠져나감 */
+#step-intro.diving-go .cloud-front {
   transform: translateY(520px) scale(3.2);
   filter: blur(6px);
   opacity: 0;
 }
-#step-intro.diving .cloud-mid {
+#step-intro.diving-go .cloud-mid {
   transform: translateY(340px) scale(2.3);
   filter: blur(4px);
   opacity: 0.5;
 }
-#step-intro.diving .cloud-back {
+#step-intro.diving-go .cloud-back {
   transform: translateY(180px) scale(1.6);
   filter: blur(2px);
   opacity: 0.7;
 }
-
 /* 콘텐츠는 살짝 확대되며 사라짐(카메라가 통과) */
-#step-intro.diving .intro-main-box {
+#step-intro.diving-go .intro-content-layer {
   transform: scale(1.18);
   opacity: 0;
 }
-
 /* 흰 페이드 인 */
-#step-intro.diving .intro-flash {
+#step-intro.diving-go .intro-flash {
   opacity: 1;
+}
+
+/* 다이브 전환 중: 로고·탭바 opacity:0으로 고정. showStep 이전에 body에 추가되어
+   display:none→flex 순간 노출 없이 완전히 숨겨짐. 1100ms 후 클래스 제거 → 페이드인 */
+body.intro-diving .btn-global-home {
+  display: flex !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+body.intro-diving .bottom-tab-bar {
+  display: flex !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cloud-layer,
-  .intro-main-box,
+  .intro-content-layer,
   .intro-flash {
     transition: none;
   }
+}
+
+/* ── 인트로 뷰 전환: 타이틀 ↔ 이름 입력 (같은 위치 크로스페이드, 구름 유지) ── */
+.intro-view {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  padding: 44px 24px 52px;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.intro-view--name {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#step-intro.show-name .intro-view--title {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#step-intro.show-name .intro-view--name {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 /* ── 콘텐츠 레이어: 로고 / 타이틀 / 설명 / 버튼 ── */
