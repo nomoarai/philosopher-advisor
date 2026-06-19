@@ -35,7 +35,6 @@ const LOCAL_STORAGE_KEYS = {
 // ─────────────────────────────────────────
 const steps = {
   intro:      document.getElementById('step-intro'),
-  name:       document.getElementById('step-name'),
   mood:       document.getElementById('step-mood'),
   theme:      document.getElementById('step-theme'),
   situation:  document.getElementById('step-situation'),
@@ -244,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 연필 채움 대상 버튼 — 글자를 span으로 감싸 스트로크 위에 표시
-  ['btn-start-intro', 'btn-next-mood', 'btn-next-situation', 'btn-submit-answer', 'btn-restart'].forEach(id => {
+  ['btn-start-intro', 'btn-name-next', 'btn-next-mood', 'btn-next-situation', 'btn-submit-answer', 'btn-restart'].forEach(id => {
     const b = document.getElementById(id);
     if (b) b.innerHTML = `<span class="btn-label">${b.innerHTML}</span>`;
   });
@@ -354,7 +353,7 @@ if (btnAdminAuth) {
 // ─────────────────────────────────────────
 // 스텝 전환
 // ─────────────────────────────────────────
-const STEP_ORDER    = { intro: 0, name: 0.5, mood: 1, theme: 2, situation: 2, mindset: 3, aiQuestion: 4, answer: 5 };
+const STEP_ORDER    = { intro: 0, mood: 1, theme: 2, situation: 2, mindset: 3, aiQuestion: 4, answer: 5 };
 const STEP_PROGRESS = { mood: { from: 0, to: 33 }, theme: { from: 33, to: 66 }, situation: { from: 33, to: 66 }, mindset: { from: 66, to: 100 } };
 let currentStepName    = 'intro';
 let stepTransitioning  = false;
@@ -392,6 +391,10 @@ function showStep(name) {
     if (name === 'intro') {
       document.body.style.overflow = 'hidden';
       document.body.style.height   = '100vh';
+      // 재진입 시 타이틀 뷰로 리셋
+      steps.intro.classList.remove('show-name', 'diving', 'diving-go');
+      if (nameInput) nameInput.value = '';
+      if (btnNameNext) btnNameNext.disabled = true;
     } else {
       document.body.style.overflow = '';
       document.body.style.height   = '';
@@ -408,7 +411,7 @@ function showStep(name) {
 
   // 인트로 진출입, 답변 화면(비디오 트랜지션이 덮음), 동일 스텝 재진입은 퇴장 생략
   const skipExit = PREFERS_REDUCED || prev === name || prev === 'intro' || name === 'intro' ||
-                   prev === 'name' || name === 'answer' || !prevEl || !prevEl.classList.contains('active');
+                   name === 'answer' || !prevEl || !prevEl.classList.contains('active');
 
   if (skipExit) {
     finishEnter(name === 'answer' || name === 'intro' ? null : 'enter-fwd');
@@ -426,26 +429,31 @@ function showStep(name) {
 }
 
 // ─────────────────────────────────────────
-// STEP 0: 인트로
+// STEP 0: 인트로 (타이틀 → 이름 입력 한 페이지)
 // ─────────────────────────────────────────
-let introDiving = false;
 if (btnStartIntro) {
-  btnStartIntro.addEventListener('click', () => {
-    if (introDiving) return;
-    if (PREFERS_REDUCED) { showStep('name'); return; }
-    introDiving = true;
-    steps.intro.classList.add('diving');   // 구름 zoom-through + 흰 페이드
-    setTimeout(() => {
-      showStep('name');                    // 흰 화면 절정에서 다음 스텝으로
-      steps.intro.classList.remove('diving'); // 인트로 복귀 대비 리셋
-      introDiving = false;
-    }, 1000);
-  });
+  // "오늘의 철학자 만나기" → 연필 채움 후 같은 화면에서 이름 입력 뷰로 전환(구름 유지)
+  btnStartIntro.addEventListener('click', () => pencilAction(btnStartIntro, () => {
+    steps.intro.classList.add('show-name');
+    setTimeout(() => nameInput && nameInput.focus(), 250);
+  }));
 }
 
-// ─────────────────────────────────────────
-// STEP 0.5: 닉네임 입력
-// ─────────────────────────────────────────
+// 이름 입력 후 구름 속으로 빨려드는 zoom-through 다이브 → 다음(기분) 화면
+function diveToMood() {
+  if (PREFERS_REDUCED) { showStep('mood'); return; }
+  const intro = steps.intro;
+  document.body.classList.add('intro-diving'); // 로고·탭바 즉시 opacity:0 — showStep 전에 추가
+  intro.classList.add('diving');               // display:block 유지로 cloudFlow 드리프트 보존
+  showStep('mood');
+  void intro.offsetWidth;
+  requestAnimationFrame(() => intro.classList.add('diving-go'));
+  setTimeout(() => {
+    intro.classList.remove('diving', 'diving-go');
+    document.body.classList.remove('intro-diving'); // 로고·탭바 페이드인
+  }, 1100);
+}
+
 if (nameInput) {
   nameInput.addEventListener('input', () => {
     btnNameNext.disabled = nameInput.value.trim().length === 0;
@@ -453,16 +461,16 @@ if (nameInput) {
 }
 
 if (btnNameNext) {
-  btnNameNext.addEventListener('click', () => {
+  btnNameNext.addEventListener('click', () => pencilAction(btnNameNext, () => {
     state.userName = nameInput ? nameInput.value.trim() : '';
-    showStep('mood');
-  });
+    diveToMood();
+  }));
 }
 
 if (btnNameSkip) {
   btnNameSkip.addEventListener('click', () => {
     state.userName = '';
-    showStep('mood');
+    diveToMood();
   });
 }
 
